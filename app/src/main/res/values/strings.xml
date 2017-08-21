@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">HomeAutomation</string>
+
+    <!-- MainActivity: Right menu settings -->
+    <string name="action_account">Mon compte</string>
+    <string name="action_settings">Paramètres</string>
+
+    <!-- Drawer -->
+    <string name="navigation_drawer_open">Open</string>
+    <string name="navigation_drawer_close">Close</string>
+    <string name="category_one">Catégorie 1</string>
+    <string name="category_two">Catégorie 2</string>
+    <string name="category_three">Catégorie 3</string>
+    <string name="category_four">Catégorie 4</string>
+
+    <!-- Drawer header -->
+    <string name="drawer_header_img_content_desc">Image par défaut</string>
+    <string name="drawer_header_username">Non connecté</string>
+    <string name="drawer_header_email">Accéder à mon compte</string>
+
+</resources>
