@@ -17,7 +17,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".StoryActivity">
-
+        </activity>
+        <activity android:name=".ScanActivity">
         </activity>
     </application>
 

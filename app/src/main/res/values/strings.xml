@@ -10,13 +10,14 @@
     <string name="action_save">Sauvegarder</string>
     <string name="action_delete">Supprimer</string>
 
+    <!-- ScanActivity: right menu settings -->
+    <string name="action_rescan">Relancer la recherche</string>
+
     <!-- Drawer -->
     <string name="navigation_drawer_open">Open</string>
     <string name="navigation_drawer_close">Close</string>
-    <string name="category_one">Catégorie 1</string>
-    <string name="category_two">Catégorie 2</string>
-    <string name="category_three">Catégorie 3</string>
-    <string name="category_four">Catégorie 4</string>
+    <string name="category_add_scenario">Ajouter un scénario</string>
+    <string name="category_scan_for_devices">Recherche d’objets connectés</string>
 
     <!-- Drawer header -->
     <string name="drawer_header_img_content_desc">Image par défaut</string>

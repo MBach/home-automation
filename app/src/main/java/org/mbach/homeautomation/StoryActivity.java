@@ -1,12 +1,21 @@
 package org.mbach.homeautomation;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
+/**
+ * StoryActivity.
+ *
+ * @author Matthieu BACHELIER
+ * @since 2017-08
+ */
 public class StoryActivity extends AppCompatActivity {
 
     @Override
@@ -20,6 +29,13 @@ public class StoryActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), ScanActivity.class));
+            }
+        });
     }
 
     @Override

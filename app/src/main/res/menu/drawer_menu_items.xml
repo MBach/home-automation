@@ -3,17 +3,11 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/category_one"
-            android:title="@string/category_one" />
+            android:id="@+id/category_add_scenario"
+            android:title="@string/category_add_scenario" />
         <item
-            android:id="@+id/category_two"
-            android:title="@string/category_two" />
-        <item
-            android:id="@+id/category_three"
-            android:title="@string/category_three" />
-        <item
-            android:id="@+id/category_four"
-            android:title="@string/category_four" />
+            android:id="@+id/category_scan_for_devices"
+            android:title="@string/category_scan_for_devices" />
     </group>
 
 </menu>

@@ -1,7 +1,6 @@
 package org.mbach.homeautomation;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -15,8 +14,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 
+/**
+ * MainActivity.
+ *
+ * @author Matthieu BACHELIER
+ * @since 2017-08
+ */
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
@@ -29,12 +33,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initToolbar();
         setupDrawerLayout();
 
-        //final LinearLayout linearLayout = findViewById(R.id.linearLayout);
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //View story = getLayoutInflater().inflate(R.layout.card_story, linearLayout, false);
-                //linearLayout.addView(story);
                 startActivity(new Intent(getApplicationContext(), StoryActivity.class));
             }
         });
@@ -48,11 +49,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        setTitle(menuItem.getTitle());
         drawerLayout.closeDrawers();
-
-        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-
+        //if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+        //}
+        switch (menuItem.getItemId()) {
+            case R.id.category_add_scenario:
+                startActivity(new Intent(getApplicationContext(), StoryActivity.class));
+                break;
+            case R.id.category_scan_for_devices:
+                startActivity(new Intent(getApplicationContext(), ScanActivity.class));
+                break;
         }
         return true;
     }
