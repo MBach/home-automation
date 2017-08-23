@@ -1,5 +1,6 @@
 package org.mbach.homeautomation;
 
+import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -28,12 +29,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initToolbar();
         setupDrawerLayout();
 
-        final LinearLayout linearLayout = findViewById(R.id.linearLayout);
+        //final LinearLayout linearLayout = findViewById(R.id.linearLayout);
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                View story = getLayoutInflater().inflate(R.layout.activity_story, linearLayout, false);
-                linearLayout.addView(story);
+                //View story = getLayoutInflater().inflate(R.layout.card_story, linearLayout, false);
+                //linearLayout.addView(story);
+                startActivity(new Intent(getApplicationContext(), StoryActivity.class));
             }
         });
     }
