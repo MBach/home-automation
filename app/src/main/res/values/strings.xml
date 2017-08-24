@@ -12,6 +12,8 @@
 
     <!-- ScanActivity: right menu settings -->
     <string name="action_rescan">Relancer la recherche</string>
+    <string name="scan_completed">Scan terminé</string>
+
 
     <!-- Drawer -->
     <string name="navigation_drawer_open">Open</string>
