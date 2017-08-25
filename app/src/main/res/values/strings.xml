@@ -13,7 +13,10 @@
     <!-- ScanActivity: right menu settings -->
     <string name="action_rescan">Relancer la recherche</string>
     <string name="scan_completed">Scan terminé</string>
-
+    <string name="wifi_disabled_title">WIFI désactivé</string>
+    <string name="wifi_disabled">Le WIFI doit être activé pour pouvoir scanner votre réseau local. Souhaitez-vous activer le WIFI ?</string>
+    <string name="wifi_unavailable_title">Pas de WIFI</string>
+    <string name="wifi_unavailable">Désolé, ce périphérique ne dispose pas de WIFI. Vous ne pouvez pas scanner votre réseau local</string>
 
     <!-- Drawer -->
     <string name="navigation_drawer_open">Open</string>

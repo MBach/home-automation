@@ -1,10 +1,11 @@
 package org.mbach.homeautomation.discovery;
 
+import android.content.DialogInterface;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.Formatter;
@@ -29,11 +30,15 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
 
     private static final String TAG = "ScanActivity";
 
+    private WifiManager wifiManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
         setTitle(R.string.category_scan_for_devices);
+
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
         Toolbar toolbar = findViewById(R.id.toolbarScan);
         setSupportActionBar(toolbar);
@@ -59,43 +64,60 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      *
      * @return the local subnet where one is connected
      */
-    @Nullable
+    @NonNull
     private String getLocalSubnet(){
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        if (wm == null) {
-            return null;
-        } else if (wm.isWifiEnabled()) {
-            String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-            int lastDot = ip.lastIndexOf(".");
-            return ip.substring(0, lastDot + 1);
-        } else {
-            return null;
-        }
+        String ip = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        int lastDot = ip.lastIndexOf(".");
+        Log.d(TAG, "IP:" + ip);
+        return ip.substring(0, lastDot + 1);
     }
 
     /**
      *
      */
     private void startDiscovery() {
-        String subnet = getLocalSubnet();
-        if (subnet == null) {
-            Log.d(TAG, "Wifi isn't enabled :(");
-            //return;
-            subnet = "192.168.1.";
-        }
+        if (wifiManager == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle(R.string.wifi_unavailable_title)
+                    .setMessage(R.string.wifi_unavailable)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
+                            scanProgressBar.setVisibility(View.GONE);
+                        }
+                    });
+            builder.create().show();
+        } else if (wifiManager.isWifiEnabled()) {
+            String subnet = getLocalSubnet();
+            List<Integer> list = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                list.add(i);
+            }
+            list.add(254);
+            for (int i = 11; i < 254; i++) {
+                list.add(i);
+            }
 
-        List<Integer> list = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            list.add(i);
-        }
-        list.add(254);
-        for (int i = 11; i < 254; i++) {
-            list.add(i);
-        }
-
-        for (int i = 0; i < 254; i++) {
-            AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this);
-            asyncNetworkRequest.execute(subnet + String.valueOf(list.get(i)));
+            for (int i = 0; i < 254; i++) {
+                AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this);
+                asyncNetworkRequest.execute(subnet + String.valueOf(list.get(i)));
+            }
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                    .setTitle(R.string.wifi_disabled_title)
+                    .setMessage(R.string.wifi_disabled)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            wifiManager.setWifiEnabled(true);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
+                            scanProgressBar.setVisibility(View.GONE);
+                        }
+                    });
+            builder.create().show();
         }
     }
 
