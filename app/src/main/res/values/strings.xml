@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">HomeAutomation</string>
 
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+    <string name="cancel">Annuler</string>
+
     <!-- MainActivity: right menu settings -->
     <string name="action_account">Mon compte</string>
     <string name="action_settings">Paramètres</string>
@@ -9,9 +13,13 @@
     <string name="add_story">Nouveau scénario</string>
     <string name="action_save">Sauvegarder</string>
     <string name="action_delete">Supprimer</string>
+    <string name="story_name">Nom du scénario</string>
+    <string name="device_list">Liste des périphériques</string>
+    <string name="add_device">Ajouter un périphérique</string>
+    <string name="delete_story_title">Confirmer la suppression</string>
+    <string name="delete_story">Souhaitez-vous abandonner vos modifications et supprimer ce scénario ? Cette action est irréversible.</string>
 
     <!-- ScanActivity: right menu settings -->
-    <string name="action_rescan">Relancer la recherche</string>
     <string name="scan_completed">Scan terminé</string>
     <string name="wifi_disabled_title">WIFI désactivé</string>
     <string name="wifi_disabled">Le WIFI doit être activé pour pouvoir scanner votre réseau local. Souhaitez-vous activer le WIFI ?</string>

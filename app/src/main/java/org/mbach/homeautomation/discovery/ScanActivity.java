@@ -14,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.mbach.homeautomation.R;
 
@@ -30,7 +32,11 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
 
     private static final String TAG = "ScanActivity";
 
+    private static int t = 0;
+
     private WifiManager wifiManager;
+
+    private String currentIp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +72,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      */
     @NonNull
     private String getLocalSubnet(){
-        String ip = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
-        int lastDot = ip.lastIndexOf(".");
-        Log.d(TAG, "IP:" + ip);
-        return ip.substring(0, lastDot + 1);
+        currentIp = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        int lastDot = currentIp.lastIndexOf(".");
+        Log.d(TAG, "IP:" + currentIp);
+        return currentIp.substring(0, lastDot + 1);
     }
 
     /**
@@ -99,19 +105,23 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             }
 
             for (int i = 0; i < 254; i++) {
-                AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this);
+                AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this, currentIp);
                 asyncNetworkRequest.execute(subnet + String.valueOf(list.get(i)));
             }
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this)
                     .setTitle(R.string.wifi_disabled_title)
                     .setMessage(R.string.wifi_disabled)
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            wifiManager.setWifiEnabled(true);
+                            if (wifiManager.setWifiEnabled(true)) {
+                                Toast.makeText(ScanActivity.this,"Activation du WIFI...", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(ScanActivity.this,"Impossible d'activer le WIFI", Toast.LENGTH_LONG).show();
+                            }
                         }
                     })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
                             scanProgressBar.setVisibility(View.GONE);
@@ -121,14 +131,18 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
-    private static int t = 0;
-
     @Override
     public void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest) {
         ++t;
-        if (asyncNetworkRequest.deviceFound) {
+        if (asyncNetworkRequest.isDeviceFound()) {
             LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
             View device = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+            TextView ip = device.findViewById(R.id.ip);
+            if (asyncNetworkRequest.isSelfFound()) {
+                ip.setText(String.format("%s (this is you)", asyncNetworkRequest.getIp()));
+            } else {
+                ip.setText(asyncNetworkRequest.getIp());
+            }
             detectedDevicesLayout.addView(device);
         }
         if (t == 254) {

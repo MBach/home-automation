@@ -18,10 +18,15 @@ public class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
 
     private OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener;
 
-    public boolean deviceFound;
+    private boolean deviceFound;
+    private boolean selfFound;
 
-    public AsyncNetworkRequest(OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener) {
+    private String ip;
+    private String selfIp;
+
+    AsyncNetworkRequest(OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener, String selfIp) {
         this.listener = listener;
+        this.selfIp = selfIp;
     }
 
     @Override
@@ -29,9 +34,16 @@ public class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
         try {
             String address = strings[0];
             InetAddress inetAddress = InetAddress.getByName(address);
-            if (inetAddress != null && inetAddress.isReachable(50)){
+            if (inetAddress != null && inetAddress.isReachable(100)){
                 Log.d(TAG, inetAddress.getHostName());
-                this.deviceFound = true;
+                Log.d(TAG, inetAddress.getCanonicalHostName());
+                Log.d(TAG, inetAddress.getHostAddress());
+                //Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getHostName());
+                //Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getCanonicalHostName());
+
+                ip = inetAddress.getHostAddress();
+                deviceFound = true;
+                selfFound = selfIp.equals(ip);
             }
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
@@ -43,5 +55,17 @@ public class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         listener.onCallCompleted(this);
+    }
+
+    boolean isDeviceFound() {
+        return deviceFound;
+    }
+
+    String getIp() {
+        return ip;
+    }
+
+    boolean isSelfFound() {
+        return selfFound;
     }
 }

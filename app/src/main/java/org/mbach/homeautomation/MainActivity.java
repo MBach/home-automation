@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.mbach.homeautomation.discovery.ScanActivity;
+import org.mbach.homeautomation.story.StoryActivity;
 
 /**
  * MainActivity.
