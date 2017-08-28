@@ -115,9 +115,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             if (wifiManager.setWifiEnabled(true)) {
-                                Toast.makeText(ScanActivity.this,"Activation du WIFI...", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ScanActivity.this, R.string.toast_enabling_wifi, Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(ScanActivity.this,"Impossible d'activer le WIFI", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ScanActivity.this, R.string.toast_enabling_wifi_failed, Toast.LENGTH_LONG).show();
                             }
                         }
                     })

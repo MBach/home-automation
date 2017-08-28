@@ -12,17 +12,17 @@ import java.net.InetAddress;
  * @author Matthieu BACHELIER
  * @since 2017-08
  */
-public class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
+class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "AsyncNetworkRequest";
 
-    private OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener;
+    private final OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener;
 
     private boolean deviceFound;
     private boolean selfFound;
 
+    private final String selfIp;
     private String ip;
-    private String selfIp;
 
     AsyncNetworkRequest(OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener, String selfIp) {
         this.listener = listener;

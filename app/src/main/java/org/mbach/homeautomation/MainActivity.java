@@ -11,12 +11,15 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.mbach.homeautomation.db.SQLiteDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
 import org.mbach.homeautomation.story.StoryActivity;
+import org.mbach.homeautomation.story.StoryDAO;
 
 /**
  * MainActivity.
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initToolbar();
         setupDrawerLayout();
+        loadStories();
 
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -118,5 +122,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         );
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
+    }
+
+    private void loadStories() {
+        View storiesLayout = findViewById(R.id.storiesLayout);
+        SQLiteDB db = new SQLiteDB(this);
+        for (StoryDAO story : db.getStories()) {
+            /// TODO
+        }
     }
 }

@@ -6,6 +6,6 @@ package org.mbach.homeautomation.discovery;
  * @author Matthieu BACHELIER
  * @since 2017-08
  */
-public interface OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> {
+interface OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> {
     void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest);
 }

@@ -7,16 +7,14 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.mbach.homeautomation.R;
-import org.mbach.homeautomation.db.StoryDB;
+import org.mbach.homeautomation.db.SQLiteDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
 
 /**
@@ -31,6 +29,8 @@ public class StoryActivity extends AppCompatActivity {
 
     private StoryDAO story;
 
+    private final SQLiteDB db = new SQLiteDB(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,30 +42,6 @@ public class StoryActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        storyEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                /// FIXME
-                if (story == null) {
-                    story = new StoryDAO();
-                }
-                story.setTitle(editable.toString());
-                Log.d(TAG, "text changed: " + editable.toString());
-            }
-        });
-
-
     }
 
     @Override
@@ -82,21 +58,24 @@ public class StoryActivity extends AppCompatActivity {
                 onBackPressed();
                 break;
             case R.id.action_save_story:
-                StoryDB storyDB = new StoryDB(this);
                 EditText storyEditText = findViewById(R.id.storyEditText);
                 if (story == null || story.getId() == -1) {
                     story = new StoryDAO();
                     story.setTitle(storyEditText.getText().toString());
                     /// TODO
                     //old.setDevices(story.getDevices());
-                    storyDB.create(story);
+                    long storyId = db.createStory(story);
+                    if (storyId > 0) {
+                        Toast.makeText(StoryActivity.this, R.string.toast_story_saved, Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
                 } else {
-                    StoryDAO old = storyDB.getStory(story.getId());
+                    StoryDAO old = db.getStory(story.getId());
                     old.setId(story.getId());
                     old.setTitle(storyEditText.getText().toString());
                     /// TODO
                     //old.setDevices(story.getDevices());
-                    storyDB.update(story);
+                    db.updateStory(story);
                 }
                 break;
             case R.id.action_delete_story:
@@ -105,11 +84,11 @@ public class StoryActivity extends AppCompatActivity {
                         .setMessage(R.string.delete_story)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-
+                                db.deleteStory(story);
                             }
                         }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-
+                                /// Nothing
                             }
                         });
                 builder.create().show();
