@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomTheme" >
+        <attr name="colorBackgroundDrawer" />
+        <attr name="rippleEffect" />
+    </declare-styleable>
+</resources>

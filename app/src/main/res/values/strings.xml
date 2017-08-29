@@ -8,6 +8,8 @@
     <!-- MainActivity: right menu settings -->
     <string name="action_account">Mon compte</string>
     <string name="action_settings">Paramètres</string>
+    <string name="story_enabled">Scénario activé</string>
+    <string name="story_disabled">Scénario désactivé</string>
 
     <!-- StoryActivity: right menu settings -->
     <string name="add_story">Nouveau scénario</string>

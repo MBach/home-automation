@@ -14,16 +14,20 @@ import android.provider.BaseColumns;
 class SQLiteHelper extends SQLiteOpenHelper {
 
     /**
+     * StoryEntry is an inner class which maps to a Story.
      *
+     * @link org.mbach.homeautomation.story.StoryDAO
      */
     static class StoryEntry implements BaseColumns {
         static final String TABLE_STORY = "table_story";
         static final String STORY_TITLE = "STORY_TITLE";
         static final String LAST_MODIFIED = "LAST_MODIFIED";
+        static final String ENABLED = "ENABLED";
         static final String CREATE_TABLE_STORY = "CREATE TABLE " + TABLE_STORY + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + STORY_TITLE + " TEXT NOT NULL, "
-                + LAST_MODIFIED + " INTEGER NOT NULL);";
+                + LAST_MODIFIED + " INTEGER NOT NULL, "
+                + ENABLED + " INTEGER DEFAULT 1);";
     }
 
     /**

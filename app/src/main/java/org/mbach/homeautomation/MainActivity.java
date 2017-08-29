@@ -4,17 +4,24 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.Switch;
+import android.widget.TextView;
 
 import org.mbach.homeautomation.db.SQLiteDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
@@ -125,10 +132,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void loadStories() {
-        View storiesLayout = findViewById(R.id.storiesLayout);
-        SQLiteDB db = new SQLiteDB(this);
-        for (StoryDAO story : db.getStories()) {
-            /// TODO
+        LinearLayout storiesLayout = findViewById(R.id.storiesLayout);
+        final SQLiteDB db = new SQLiteDB(this);
+        for (final StoryDAO storyDAO : db.getStories()) {
+
+            View story = getLayoutInflater().inflate(R.layout.card_story, storiesLayout, false);
+            story.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
+                    /// TODO params
+                    startActivity(intent);
+                }
+            });
+            TextView titleStory = story.findViewById(R.id.title);
+            titleStory.setText(storyDAO.getTitle());
+            Switch toggleStory = story.findViewById(R.id.enabled);
+            toggleStory.setChecked(storyDAO.isEnabled());
+            toggleStory.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean enabled) {
+                    storyDAO.setEnabled(enabled);
+                    if (db.updateStory(storyDAO)) {
+                        int text = enabled ? R.string.story_enabled : R.string.story_disabled;
+                        Snackbar.make(findViewById(R.id.appBarLayout), text, Snackbar.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            storiesLayout.addView(story);
         }
     }
 }

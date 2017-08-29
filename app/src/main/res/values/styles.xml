@@ -1,19 +1,35 @@
 <resources>
 
-    <color name="primary">#607D8B</color>
-    <color name="primary_dark">#455A64</color>
-    <color name="primary_light">#CFD8DC</color>
-    <color name="accent">#448AFF</color>
+    <color name="primary">#424242</color>
+    <color name="primary_dark">#212121</color>
+    <color name="primary_light">#ffffff</color>
+    <color name="primary_light_dark">#e0e0e0</color>
+    <color name="accent">#ffc400</color>
+    <color name="accent_complementary">#304ffe</color>
+
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#757575</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="DarkTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="background">@color/primary_dark</item>
+        <item name="colorControlHighlight">@color/accent</item> 
         <item name="colorAccent">@color/accent</item>
+        <item name="colorBackgroundDrawer">@color/primary</item>
+    </style>
+
+    <!-- Alternate theme is light -->
+    <style name="LightTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_light</item> 
+        <item name="colorPrimaryDark">@color/primary_light_dark</item> 
+        <item name="background">@color/primary_light_dark</item>
+        <item name="colorControlHighlight">#ffab00</item> 
+        <item name="colorAccent">#ffab00</item>
+        <item name="colorBackgroundDrawer">@color/primary_light_dark</item>
     </style>
 
 </resources>

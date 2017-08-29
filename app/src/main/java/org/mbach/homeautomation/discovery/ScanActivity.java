@@ -1,6 +1,7 @@
 package org.mbach.homeautomation.discovery;
 
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -114,6 +115,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     .setMessage(R.string.wifi_disabled)
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+                            //WifiMonitor wifiMonitor = new WifiMonitor();
+                            //IntentFilter intentFilter = new IntentFilter();
+                            //intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+                            //registerReceiver(wifiMonitor, intentFilter);
                             if (wifiManager.setWifiEnabled(true)) {
                                 Toast.makeText(ScanActivity.this, R.string.toast_enabling_wifi, Toast.LENGTH_SHORT).show();
                             } else {

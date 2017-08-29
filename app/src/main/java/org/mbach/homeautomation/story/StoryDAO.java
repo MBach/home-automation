@@ -10,6 +10,7 @@ public class StoryDAO {
 
     private long id;
     private String title;
+    private boolean enabled;
 
     public StoryDAO() {
         this.id = -1;
@@ -33,5 +34,13 @@ public class StoryDAO {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
