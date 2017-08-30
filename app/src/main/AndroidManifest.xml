@@ -22,9 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".story.StoryActivity"
-            android:windowSoftInputMode = "stateVisible">
-        </activity>
+        <activity android:name=".story.StoryActivity" android:windowSoftInputMode = "stateVisible" />
+        <activity android:name=".story.ImageSearchActivity" android:windowSoftInputMode = "stateVisible" />
         <activity android:name=".discovery.ScanActivity">
         </activity>
         <!-- FIXME

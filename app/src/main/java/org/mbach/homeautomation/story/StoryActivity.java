@@ -2,6 +2,7 @@ package org.mbach.homeautomation.story;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
@@ -42,6 +44,15 @@ public class StoryActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        if (getIntent() != null) {
+            long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
+            if (id != -1) {
+                story = db.getStory(id);
+                EditText storyEditText = findViewById(R.id.storyEditText);
+                storyEditText.setText(story.getTitle());
+            }
+        }
     }
 
     @Override
@@ -59,23 +70,24 @@ public class StoryActivity extends AppCompatActivity {
                 break;
             case R.id.action_save_story:
                 EditText storyEditText = findViewById(R.id.storyEditText);
-                if (story == null || story.getId() == -1) {
+                if (story == null) {
                     story = new StoryDAO();
-                    story.setTitle(storyEditText.getText().toString());
-                    /// TODO
-                    //old.setDevices(story.getDevices());
-                    long storyId = db.createStory(story);
-                    if (storyId > 0) {
-                        Toast.makeText(StoryActivity.this, R.string.toast_story_saved, Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                } else {
-                    StoryDAO old = db.getStory(story.getId());
-                    old.setId(story.getId());
-                    old.setTitle(storyEditText.getText().toString());
-                    /// TODO
-                    //old.setDevices(story.getDevices());
-                    db.updateStory(story);
+                }
+                story.setTitle(storyEditText.getText().toString());
+                /// TODO
+                //story.setDevices();
+
+                long storyId = -1;
+                if (story.getId() == -1) {
+                    storyId = db.createStory(story);
+                } else if (db.updateStory(story)) {
+                    storyId = story.getId();
+                }
+                if (storyId > 0) {
+                    Toast.makeText(StoryActivity.this, R.string.toast_story_saved, Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent();
+                    setResult(Constants.STORY_MODIFIED, intent);
+                    finish();
                 }
                 break;
             case R.id.action_delete_story:
@@ -84,7 +96,12 @@ public class StoryActivity extends AppCompatActivity {
                         .setMessage(R.string.delete_story)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                db.deleteStory(story);
+                                if (db.deleteStory(story)) {
+                                    Toast.makeText(StoryActivity.this, R.string.toast_story_deleted, Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent();
+                                    setResult(Constants.STORY_MODIFIED, intent);
+                                    finish();
+                                }
                             }
                         }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -102,5 +119,9 @@ public class StoryActivity extends AppCompatActivity {
 
     public void addDevice(View view) {
         startActivity(new Intent(getApplicationContext(), ScanActivity.class));
+    }
+
+    public void searchImage(View view) {
+        startActivity(new Intent(getApplicationContext(), ImageSearchActivity.class));
     }
 }

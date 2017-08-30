@@ -11,10 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +26,7 @@ import org.mbach.homeautomation.story.StoryActivity;
 import org.mbach.homeautomation.story.StoryDAO;
 
 /**
- * MainActivity.
+ * MainActivity class.
  *
  * @author Matthieu BACHELIER
  * @since 2017-08
@@ -37,6 +34,7 @@ import org.mbach.homeautomation.story.StoryDAO;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
+    private static final int FROM_STORY_ACTIVITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), StoryActivity.class));
+                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), FROM_STORY_ACTIVITY);
             }
         });
     }
@@ -68,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //}
         switch (menuItem.getItemId()) {
             case R.id.category_add_scenario:
-                startActivity(new Intent(getApplicationContext(), StoryActivity.class));
+                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), FROM_STORY_ACTIVITY);
                 break;
             case R.id.category_scan_for_devices:
                 startActivity(new Intent(getApplicationContext(), ScanActivity.class));
@@ -91,6 +89,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FROM_STORY_ACTIVITY && resultCode == Constants.STORY_MODIFIED) {
+            recreate();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -141,8 +147,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
+                    intent.putExtra(Constants.EXTRA_STORY_ID, storyDAO.getId());
                     /// TODO params
-                    startActivity(intent);
+                    startActivityForResult(intent, FROM_STORY_ACTIVITY);
+                    //Bundle bundle = new Bundle();
+                    //startActivity(intent, bundle);
                 }
             });
             TextView titleStory = story.findViewById(R.id.title);

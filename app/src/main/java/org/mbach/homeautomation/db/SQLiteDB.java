@@ -95,20 +95,19 @@ public class SQLiteDB {
 
     public StoryDAO getStory(long idToFind) {
         open();
-        Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
-                new String[] { SQLiteHelper.StoryEntry._ID },
-                SQLiteHelper.StoryEntry._ID,
+        Cursor entry = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
+                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED },
+                SQLiteHelper.StoryEntry._ID + " = ?",
                 new String[] { String.valueOf(idToFind) }, null,null, null);
         StoryDAO result = null;
-        while (entries.moveToNext()) {
-            long id = entries.getLong(0);
-            if (id == idToFind) {
-                result = new StoryDAO(id);
-                result.setTitle(entries.getString(1));
-                break;
-            }
+        entry.moveToFirst();
+        long id = entry.getLong(0);
+        if (id == idToFind) {
+            result = new StoryDAO(id);
+            result.setTitle(entry.getString(1));
+            result.setEnabled(entry.getInt(2) == 1);
         }
-        entries.close();
+        entry.close();
         close();
         return result;
     }
