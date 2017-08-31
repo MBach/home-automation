@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">HomeAutomation</string>
+    <!-- FIXME -->
+    <string name="app_api_key">API_KEY</string>
 
     <string name="yes">Oui</string>
     <string name="no">Non</string>
