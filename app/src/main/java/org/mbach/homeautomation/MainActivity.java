@@ -34,7 +34,6 @@ import org.mbach.homeautomation.story.StoryDAO;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
-    private static final int FROM_STORY_ACTIVITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), FROM_STORY_ACTIVITY);
+                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), Constants.RQ_MAIN_TO_STORY);
             }
         });
     }
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //}
         switch (menuItem.getItemId()) {
             case R.id.category_add_scenario:
-                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), FROM_STORY_ACTIVITY);
+                startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), Constants.RQ_MAIN_TO_STORY);
                 break;
             case R.id.category_scan_for_devices:
                 startActivity(new Intent(getApplicationContext(), ScanActivity.class));
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == FROM_STORY_ACTIVITY && resultCode == Constants.STORY_MODIFIED) {
+        if (requestCode == Constants.RQ_MAIN_TO_STORY && resultCode == Constants.RES_STORY_MODIFIED) {
             recreate();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -148,9 +147,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
                     intent.putExtra(Constants.EXTRA_STORY_ID, storyDAO.getId());
-                    /// TODO params
-                    startActivityForResult(intent, FROM_STORY_ACTIVITY);
+                    /// TODO params?
+                    startActivityForResult(intent, Constants.RQ_MAIN_TO_STORY);
                     //Bundle bundle = new Bundle();
+                    //bundle. ?
                     //startActivity(intent, bundle);
                 }
             });

@@ -1,5 +1,7 @@
 package org.mbach.homeautomation.story;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,8 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 
 import java.util.ArrayList;
@@ -34,24 +36,36 @@ import java.util.List;
  * @author Matthieu BACHELIER
  * @since 2017-08
  */
-public class ImageSearchActivity extends AppCompatActivity {
+public class ImageSearchActivity extends AppCompatActivity implements ImageAdapter.OnClickImageListener {
 
     private static final String TAG = "ImageSearchActivity";
-
     private static final String TEMPLATE = "https://www.googleapis.com/customsearch/v1";
 
-    private final ImageAdapter imageAdapter = new ImageAdapter();
-
+    private ImageAdapter imageAdapter;
     private RequestQueue requestQueue = null;
+
+    private Bitmap bitmap;
+
+    //private Intent i;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_search);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        final RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
+        RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
         resultsRecyclerView.setLayoutManager(linearLayoutManager);
+        imageAdapter = new ImageAdapter(this);
         resultsRecyclerView.setAdapter(imageAdapter);
+
+        //Intent i = getIntent();
+        //i.putExtra("test2", bitmap);
+        //setIntent(i);
+        //i = new Intent();
+        //i.putExtra("test2", bitmap);
+        //setIntent(i);
+        //setResult(RESULT_OK, i);
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -64,7 +78,6 @@ public class ImageSearchActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                Log.d(TAG, "about to start query: " + s);
                 String apiKey = getString(R.string.app_api_key);
                 String uri = Uri.parse(TEMPLATE)
                         .buildUpon()
@@ -91,7 +104,7 @@ public class ImageSearchActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id) {
             case android.R.id.home:
-                onBackPressed();
+                this.onBackPressed();
                 break;
             default:
                 break;
@@ -121,6 +134,12 @@ public class ImageSearchActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult");
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     /**
      *
      */
@@ -130,4 +149,33 @@ public class ImageSearchActivity extends AppCompatActivity {
             Log.d(TAG, error.toString());
         }
     };
+
+    //private Bitmap bitmap;
+
+    /*public void processBitmap(Bitmap bitmap) {
+        Log.d(TAG, "processBitmap, null ? " + (bitmap == null));
+        this.bitmap = bitmap;
+        Intent i = new Intent();
+        i.putExtra("test2", bitmap);
+        setIntent(i);
+        setResult(RESULT_OK);
+        //setResult(RESULT_OK, new Intent().putExtra("test2", bitmap));
+        finish(); // intent is null in StoryActivity
+        //finishFromChild(this); // intent is null in StoryActivity
+        //finishActivity(Constants.RQ_STORY_TO_IMAGE); // nothing happens
+        //finishActivityFromChild(this, Constants.RQ_STORY_TO_IMAGE); // nothing happens
+        //moveTaskToBack(true);
+        //onBackPressed();
+    }*/
+
+    @Override
+    public void onClick(Bitmap bitmap) {
+        Log.d(TAG, "on click ?");
+        this.bitmap = bitmap;
+        Intent i = new Intent();
+        i.putExtra("test2", bitmap);
+        setIntent(i);
+        setResult(RESULT_OK);
+        finish();
+    }
 }

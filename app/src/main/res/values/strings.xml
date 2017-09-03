@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">HomeAutomation</string>
     <!-- FIXME -->
-    <string name="app_api_key">API_KEY</string>
+    <string name="app_api_key">AIzaSyATXp5h2940byJeOBZXXelD3DdERXIriuw</string>
 
     <string name="yes">Oui</string>
-    <string name="no">Non</string>
     <string name="cancel">Annuler</string>
 
     <!-- MainActivity -->
@@ -18,6 +17,7 @@
     <string name="action_save">Sauvegarder</string>
     <string name="action_delete">Supprimer</string>
     <string name="story_name">Nom du scénario</string>
+    <string name="cover_picture">Image de couverture</string>
     <string name="add_picture">Ajouter une image</string>
     <string name="device_list">Liste des périphériques</string>
     <string name="add_device">Ajouter un périphérique</string>
@@ -37,6 +37,10 @@
     <string name="wifi_unavailable">Désolé, ce périphérique ne dispose pas de WIFI. Vous ne pouvez pas scanner votre réseau local</string>
     <string name="toast_enabling_wifi">Activation du WIFI…</string>
     <string name="toast_enabling_wifi_failed">Impossible d’activer le WIFI</string>
+    <string name="device_icon">Icône du périphérique</string>
+    <string name="device_hostname">Nom du périphérique</string>
+    <string name="device_ip">Adresse IP du périphérique</string>
+    <string name="device_vendor">Fabricant</string>
 
     <!-- Drawer -->
     <string name="navigation_drawer_open">Open</string>

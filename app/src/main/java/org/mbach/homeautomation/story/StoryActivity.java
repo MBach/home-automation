@@ -2,16 +2,18 @@ package org.mbach.homeautomation.story;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.mbach.homeautomation.Constants;
@@ -86,7 +88,7 @@ public class StoryActivity extends AppCompatActivity {
                 if (storyId > 0) {
                     Toast.makeText(StoryActivity.this, R.string.toast_story_saved, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent();
-                    setResult(Constants.STORY_MODIFIED, intent);
+                    setResult(Constants.RES_STORY_MODIFIED, intent);
                     finish();
                 }
                 break;
@@ -99,7 +101,7 @@ public class StoryActivity extends AppCompatActivity {
                                 if (db.deleteStory(story)) {
                                     Toast.makeText(StoryActivity.this, R.string.toast_story_deleted, Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent();
-                                    setResult(Constants.STORY_MODIFIED, intent);
+                                    setResult(Constants.RES_STORY_MODIFIED, intent);
                                     finish();
                                 }
                             }
@@ -114,6 +116,31 @@ public class StoryActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult 1");
+        if (requestCode == Constants.RQ_STORY_TO_IMAGE && resultCode == RESULT_OK) {
+            Log.d(TAG, "onActivityResult 2");
+            if (data != null) {
+                Bitmap bitmap = data.getExtras().getParcelable("test2");
+                Log.d(TAG, "We've got a bitmap here");
+                ImageView coverStory = findViewById(R.id.coverStory);
+                coverStory.setImageBitmap(bitmap);
+            } else {
+                Log.d(TAG, "data is null");
+                Toast.makeText(this, "Data is null", Toast.LENGTH_SHORT).show();
+            }
+            //recreate();
+        }
+    }
+
+    @Override
+    public void onActivityReenter(int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        Log.d(TAG, "onActivityReenter 1");
 
     }
 
@@ -122,6 +149,11 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     public void searchImage(View view) {
-        startActivity(new Intent(getApplicationContext(), ImageSearchActivity.class));
+        Intent intent = new Intent(getApplicationContext(), ImageSearchActivity.class);
+        if (story != null) {
+            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
+        }
+        startActivityForResult(intent, Constants.RQ_STORY_TO_IMAGE);
+        //startActivity(intent);
     }
 }

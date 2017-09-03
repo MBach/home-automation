@@ -23,11 +23,13 @@ class SQLiteHelper extends SQLiteOpenHelper {
         static final String STORY_TITLE = "STORY_TITLE";
         static final String LAST_MODIFIED = "LAST_MODIFIED";
         static final String ENABLED = "ENABLED";
+        static final String IMAGE = "IMAGE";
         static final String CREATE_TABLE_STORY = "CREATE TABLE " + TABLE_STORY + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + STORY_TITLE + " TEXT NOT NULL, "
                 + LAST_MODIFIED + " INTEGER NOT NULL, "
-                + ENABLED + " INTEGER DEFAULT 1);";
+                + ENABLED + " INTEGER DEFAULT 1, "
+                + IMAGE + " TEXT);";
     }
 
     /**

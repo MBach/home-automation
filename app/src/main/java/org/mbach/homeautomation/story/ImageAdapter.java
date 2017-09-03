@@ -1,14 +1,17 @@
 package org.mbach.homeautomation.story;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+
+import org.mbach.homeautomation.Constants;
 
 import java.util.List;
 
@@ -20,31 +23,61 @@ import java.util.List;
  */
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolderImage> {
 
+    public interface OnClickImageListener {
+        void onClick(Bitmap bitmap);
+    }
+
     private static final String TAG = "ImageAdapter";
 
     private List<Model> items;
+
+    private ImageSearchActivity imageSearchActivity;
+
+    public ImageAdapter(ImageSearchActivity imageSearchActivity) {
+        this.imageSearchActivity = imageSearchActivity;
+    }
 
     /**
      * @param items list of items to display
      */
     void insertItems(List<Model> items) {
-        if (this.items == null) {
-            this.items = items;
-        } else {
-            this.items.addAll(items);
-        }
+        // Don't keep old items (might change in the future to parse next pages)
+        this.items = items;
         notifyDataSetChanged();
     }
 
+    private ViewHolderImage viewHolderImage;
+
+    /*private View.OnClickListener listener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Log.d(TAG, "Click !");
+            //Toast.makeText(parent.getContext(), "Click on view", Toast.LENGTH_SHORT).show();
+            viewHolderImage.image.buildDrawingCache();
+            Bitmap bitmap = viewHolderImage.image.getDrawingCache();
+            //Environment.getDataDirectory();
+
+            /// TODO save image to FS and pass only the link
+            //Intent intent = new Intent(imageSearchActivity.getApplicationContext(), ImageSearchActivity.class);
+            //intent.putExtra("test2", bitmap);
+            //imageSearchActivity.setIntent(intent);
+            //imageSearchActivity.setResult(Constants.RES_IMAGE_PICKED_BY_ONE);
+            //imageSearchActivity.finish();
+            imageSearchActivity.onClick(bitmap);
+            //imageSearchActivity.processBitmap(bitmap);
+            //imageSearchActivity.moveTaskToBack(true);
+            //processBitmap(bitmap);
+            //ImageAdapter.on();
+        }
+    };*/
+
     @Override
     public ViewHolderImage onCreateViewHolder(final ViewGroup parent, int viewType) {
-        ViewHolderImage viewHolderImage = new ViewHolderImage(new ImageView(parent.getContext()));
+        viewHolderImage = new ViewHolderImage(new ImageView(parent.getContext()));
         viewHolderImage.image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "Click !");
-                Toast.makeText(parent.getContext(), "Click on view", Toast.LENGTH_SHORT).show();
-                /// TODO save image to Story
+
             }
         });
         return viewHolderImage;
@@ -68,6 +101,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolderIm
     public int getItemCount() {
         return items == null ? 0 : items.size();
     }
+
+    /*@Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "ICI ?");
+    }*/
 
     /**
      *
