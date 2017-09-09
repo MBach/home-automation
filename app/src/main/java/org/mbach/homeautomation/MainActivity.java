@@ -1,6 +1,8 @@
 package org.mbach.homeautomation;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -92,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Constants.RQ_MAIN_TO_STORY && resultCode == Constants.RES_STORY_MODIFIED) {
+        if (requestCode == Constants.RQ_MAIN_TO_STORY && resultCode == RESULT_OK) {
             recreate();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -168,6 +170,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }
             });
+            Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), storyDAO);
+            if (bitmap == null) {
+                story.setBackgroundColor(getResources().getColor(R.color.primary));
+            } else {
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
+                story.setBackground(bitmapDrawable);
+            }
             storiesLayout.addView(story);
         }
     }

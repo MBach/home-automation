@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import org.mbach.homeautomation.story.StoryDAO;
 
@@ -43,6 +42,7 @@ public class SQLiteDB {
         ContentValues values = new ContentValues();
         values.put(SQLiteHelper.StoryEntry.STORY_TITLE, story.getTitle());
         values.put(SQLiteHelper.StoryEntry.LAST_MODIFIED, System.currentTimeMillis());
+        values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
         long id = sqLiteDatabase.insert(SQLiteHelper.StoryEntry.TABLE_STORY, null, values);
         close();
         return id;
@@ -54,6 +54,7 @@ public class SQLiteDB {
         values.put(SQLiteHelper.StoryEntry.STORY_TITLE, story.getTitle());
         values.put(SQLiteHelper.StoryEntry.LAST_MODIFIED, System.currentTimeMillis());
         values.put(SQLiteHelper.StoryEntry.ENABLED, story.isEnabled());
+        values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
 
         String selection = SQLiteHelper.StoryEntry._ID + " = ?";
         String[] selectionArgs = { String.valueOf(story.getId()) };
@@ -75,40 +76,42 @@ public class SQLiteDB {
     public List<StoryDAO> getStories() {
         open();
         Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
-                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED },
+                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
                 SQLiteHelper.StoryEntry._ID,
                 null, null,null,
                 SQLiteHelper.StoryEntry.LAST_MODIFIED + " DESC");
-        List<StoryDAO> results = new ArrayList<>();
+        List<StoryDAO> stories = new ArrayList<>();
         if (entries.getCount() != 0) {
             while (entries.moveToNext()) {
                 StoryDAO story = new StoryDAO(entries.getLong(0));
                 story.setTitle(entries.getString(1));
                 story.setEnabled(entries.getInt(2) == 1);
-                results.add(story);
+                story.setCoverPath(entries.getString(3));
+                stories.add(story);
             }
         }
         entries.close();
         close();
-        return results;
+        return stories;
     }
 
     public StoryDAO getStory(long idToFind) {
         open();
         Cursor entry = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
-                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED },
+                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
                 SQLiteHelper.StoryEntry._ID + " = ?",
                 new String[] { String.valueOf(idToFind) }, null,null, null);
-        StoryDAO result = null;
+        StoryDAO story = null;
         entry.moveToFirst();
         long id = entry.getLong(0);
         if (id == idToFind) {
-            result = new StoryDAO(id);
-            result.setTitle(entry.getString(1));
-            result.setEnabled(entry.getInt(2) == 1);
+            story = new StoryDAO(id);
+            story.setTitle(entry.getString(1));
+            story.setEnabled(entry.getInt(2) == 1);
+            story.setCoverPath(entry.getString(3));
         }
         entry.close();
         close();
-        return result;
+        return story;
     }
 }

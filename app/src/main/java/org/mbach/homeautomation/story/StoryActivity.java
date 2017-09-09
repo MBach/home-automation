@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,10 +17,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import org.mbach.homeautomation.Constants;
+import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * StoryActivity.
@@ -34,6 +42,8 @@ public class StoryActivity extends AppCompatActivity {
     private StoryDAO story;
 
     private final SQLiteDB db = new SQLiteDB(this);
+
+    private boolean hasNewCover;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +63,11 @@ public class StoryActivity extends AppCompatActivity {
                 story = db.getStory(id);
                 EditText storyEditText = findViewById(R.id.storyEditText);
                 storyEditText.setText(story.getTitle());
+                ImageView coverStory = findViewById(R.id.coverStory);
+                Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), story);
+                if (bitmap != null) {
+                    coverStory.setImageBitmap(bitmap);
+                }
             }
         }
     }
@@ -79,6 +94,13 @@ public class StoryActivity extends AppCompatActivity {
                 /// TODO
                 //story.setDevices();
 
+                if (hasNewCover) {
+                    String cover = saveCover();
+                    if (cover != null) {
+                        story.setCoverPath(cover);
+                    }
+                }
+
                 long storyId = -1;
                 if (story.getId() == -1) {
                     storyId = db.createStory(story);
@@ -88,7 +110,7 @@ public class StoryActivity extends AppCompatActivity {
                 if (storyId > 0) {
                     Toast.makeText(StoryActivity.this, R.string.toast_story_saved, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent();
-                    setResult(Constants.RES_STORY_MODIFIED, intent);
+                    setResult(RESULT_OK, intent);
                     finish();
                 }
                 break;
@@ -101,7 +123,7 @@ public class StoryActivity extends AppCompatActivity {
                                 if (db.deleteStory(story)) {
                                     Toast.makeText(StoryActivity.this, R.string.toast_story_deleted, Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent();
-                                    setResult(Constants.RES_STORY_MODIFIED, intent);
+                                    setResult(RESULT_OK, intent);
                                     finish();
                                 }
                             }
@@ -122,18 +144,11 @@ public class StoryActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult 1");
-        if (requestCode == Constants.RQ_STORY_TO_IMAGE && resultCode == RESULT_OK) {
-            Log.d(TAG, "onActivityResult 2");
-            if (data != null) {
-                Bitmap bitmap = data.getExtras().getParcelable("test2");
-                Log.d(TAG, "We've got a bitmap here");
-                ImageView coverStory = findViewById(R.id.coverStory);
-                coverStory.setImageBitmap(bitmap);
-            } else {
-                Log.d(TAG, "data is null");
-                Toast.makeText(this, "Data is null", Toast.LENGTH_SHORT).show();
-            }
-            //recreate();
+        if (requestCode == Constants.RQ_STORY_TO_IMAGE && resultCode == RESULT_OK && data != null) {
+            Log.d(TAG, "onActivityResult 2 : " + data.getStringExtra("file"));
+            ImageView coverStory = findViewById(R.id.coverStory);
+            Picasso.with(getBaseContext()).load(data.getStringExtra("file")).into(coverStory);
+            hasNewCover = true;
         }
     }
 
@@ -154,6 +169,25 @@ public class StoryActivity extends AppCompatActivity {
             intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
         }
         startActivityForResult(intent, Constants.RQ_STORY_TO_IMAGE);
-        //startActivity(intent);
+    }
+
+    @Nullable
+    private String saveCover() {
+        ImageView coverStory = findViewById(R.id.coverStory);
+        coverStory.buildDrawingCache();
+        Bitmap bitmap = coverStory.getDrawingCache();
+        try {
+            long timestamp = System.currentTimeMillis();
+            String file = String.format("story_%s", timestamp);
+            FileOutputStream fos = openFileOutput(file, MODE_PRIVATE);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos);
+            fos.flush();
+            fos.close();
+            return file;
+        } catch (FileNotFoundException e) {
+            return null;
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

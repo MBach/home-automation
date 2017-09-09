@@ -1,19 +1,19 @@
 package org.mbach.homeautomation.story;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.ImageView;
+import android.view.View;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -24,7 +24,6 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ import java.util.List;
  * @author Matthieu BACHELIER
  * @since 2017-08
  */
-public class ImageSearchActivity extends AppCompatActivity implements ImageAdapter.OnClickImageListener {
+public class ImageSearchActivity extends AppCompatActivity {
 
     private static final String TAG = "ImageSearchActivity";
     private static final String TEMPLATE = "https://www.googleapis.com/customsearch/v1";
@@ -44,28 +43,32 @@ public class ImageSearchActivity extends AppCompatActivity implements ImageAdapt
     private ImageAdapter imageAdapter;
     private RequestQueue requestQueue = null;
 
-    private Bitmap bitmap;
+    public interface OnItemClickListener {
+        void onItemClick(Model item);
+    }
 
-    //private Intent i;
-
+    private Model previous;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_search);
         final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
+        final RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
         resultsRecyclerView.setLayoutManager(linearLayoutManager);
-        imageAdapter = new ImageAdapter(this);
+        final FloatingActionButton floatingActionButton = findViewById(R.id.floatingActionButton);
+        imageAdapter = new ImageAdapter(new OnItemClickListener() {
+            @Override
+            public void onItemClick(Model item) {
+                if (previous == item && floatingActionButton.getVisibility() == View.VISIBLE) {
+                    floatingActionButton.hide();
+                } else {
+                    floatingActionButton.show();
+                }
+                previous = item;
+            }
+        });
         resultsRecyclerView.setAdapter(imageAdapter);
-
-        //Intent i = getIntent();
-        //i.putExtra("test2", bitmap);
-        //setIntent(i);
-        //i = new Intent();
-        //i.putExtra("test2", bitmap);
-        //setIntent(i);
-        //setResult(RESULT_OK, i);
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -89,12 +92,28 @@ public class ImageSearchActivity extends AppCompatActivity implements ImageAdapt
                         .build().toString();
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, uri, onResponse, onError);
                 requestQueue.add(stringRequest);
+                /// DEBUG
+                /*List<Model> modelList = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {
+                    modelList.add(new Model("http://lorempixel.com/500/500/animals/" + i, i));
+                }
+                imageAdapter.insertItems(modelList);*/
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
                 return false;
+            }
+        });
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.putExtra("file", previous.getTheContent());
+                setResult(Activity.RESULT_OK, intent);
+                finish();
             }
         });
     }
@@ -115,7 +134,7 @@ public class ImageSearchActivity extends AppCompatActivity implements ImageAdapt
     /**
      *
      */
-    private Response.Listener<String> onResponse = new Response.Listener<String>() {
+    private final Response.Listener<String> onResponse = new Response.Listener<String>() {
         @Override
         public void onResponse(String response) {
             try {
@@ -143,39 +162,10 @@ public class ImageSearchActivity extends AppCompatActivity implements ImageAdapt
     /**
      *
      */
-    private Response.ErrorListener onError = new Response.ErrorListener() {
+    private final Response.ErrorListener onError = new Response.ErrorListener() {
         @Override
         public void onErrorResponse(VolleyError error) {
             Log.d(TAG, error.toString());
         }
     };
-
-    //private Bitmap bitmap;
-
-    /*public void processBitmap(Bitmap bitmap) {
-        Log.d(TAG, "processBitmap, null ? " + (bitmap == null));
-        this.bitmap = bitmap;
-        Intent i = new Intent();
-        i.putExtra("test2", bitmap);
-        setIntent(i);
-        setResult(RESULT_OK);
-        //setResult(RESULT_OK, new Intent().putExtra("test2", bitmap));
-        finish(); // intent is null in StoryActivity
-        //finishFromChild(this); // intent is null in StoryActivity
-        //finishActivity(Constants.RQ_STORY_TO_IMAGE); // nothing happens
-        //finishActivityFromChild(this, Constants.RQ_STORY_TO_IMAGE); // nothing happens
-        //moveTaskToBack(true);
-        //onBackPressed();
-    }*/
-
-    @Override
-    public void onClick(Bitmap bitmap) {
-        Log.d(TAG, "on click ?");
-        this.bitmap = bitmap;
-        Intent i = new Intent();
-        i.putExtra("test2", bitmap);
-        setIntent(i);
-        setResult(RESULT_OK);
-        finish();
-    }
 }

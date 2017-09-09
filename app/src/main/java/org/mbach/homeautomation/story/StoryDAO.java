@@ -11,6 +11,7 @@ public class StoryDAO {
     private long id;
     private String title;
     private boolean enabled;
+    private String coverPath;
 
     public StoryDAO() {
         this.id = -1;
@@ -42,5 +43,13 @@ public class StoryDAO {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getCoverPath() {
+        return coverPath;
+    }
+
+    public void setCoverPath(String coverPath) {
+        this.coverPath = coverPath;
     }
 }
