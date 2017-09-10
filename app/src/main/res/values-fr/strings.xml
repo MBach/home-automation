@@ -1,0 +1,37 @@
+<resources>
+    <string name="yes">Oui</string>
+    <string name="cancel">Annuler</string>
+    <string name="action_account">Mon compte</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="story_enabled">Scénario activé</string>
+    <string name="story_disabled">Scénario désactivé</string>
+    <string name="add_story">Nouveau scénario</string>
+    <string name="action_save">Sauvegarder</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="story_name">Nom du scénario</string>
+    <string name="cover_picture">Image de couverture</string>
+    <string name="add_picture">Ajouter une image</string>
+    <string name="device_list">Liste des périphériques</string>
+    <string name="add_device">Ajouter un périphérique</string>
+    <string name="delete_story_title">Confirmer la suppression</string>
+    <string name="delete_story">Souhaitez-vous abandonner vos modifications et supprimer ce scénario ? Cette action est irréversible.</string>
+    <string name="toast_story_saved">Scénario sauvegardé</string>
+    <string name="toast_story_deleted">Scénario supprimé</string>
+    <string name="image_search_title">Rechercher une image</string>
+    <string name="scan_completed">Scan terminé</string>
+    <string name="wifi_disabled_title">WIFI désactivé</string>
+    <string name="wifi_disabled">Le WIFI doit être activé pour pouvoir scanner votre réseau local. Souhaitez-vous activer le WIFI ?</string>
+    <string name="wifi_unavailable_title">Pas de WIFI</string>
+    <string name="wifi_unavailable">Désolé, ce périphérique ne dispose pas de WIFI. Vous ne pouvez pas scanner votre réseau local</string>
+    <string name="toast_enabling_wifi">Activation du WIFI…</string>
+    <string name="toast_enabling_wifi_failed">Impossible d’activer le WIFI</string>
+    <string name="device_icon">Icône du périphérique</string>
+    <string name="device_hostname">Nom du périphérique</string>
+    <string name="device_ip">Adresse IP du périphérique</string>
+    <string name="device_vendor">Fabricant</string>
+    <string name="category_add_scenario">Ajouter un scénario</string>
+    <string name="category_scan_for_devices">Recherche d’objets connectés</string>
+    <string name="drawer_header_img_content_desc">Image par défaut</string>
+    <string name="drawer_header_username">Non connecté</string>
+    <string name="drawer_header_email">Accéder à mon compte</string>
+</resources>
