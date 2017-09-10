@@ -37,9 +37,17 @@ class SQLiteHelper extends SQLiteOpenHelper {
      */
     static class DeviceEntry implements BaseColumns {
         static final String TABLE_DEVICE = "table_device";
+        static final String IP = "IP";
+        static final String SSID = "SSID";
+        static final String NAME = "NAME";
+        static final String VENDOR = "VENDOR";
         static final String LAST_SEEN = "LAST_SEEN";
         static final String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
+                + IP + " TEXT NOT NULL, "
+                + SSID + " TEXT NOT NULL, "
+                + NAME + " TEXT, "
+                + VENDOR + " TEXT, "
                 + LAST_SEEN + " INTEGER NOT NULL);";
     }
 

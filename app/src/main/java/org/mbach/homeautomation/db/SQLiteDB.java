@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.mbach.homeautomation.discovery.DeviceDAO;
 import org.mbach.homeautomation.story.StoryDAO;
 
 import java.util.ArrayList;
@@ -46,6 +47,71 @@ public class SQLiteDB {
         long id = sqLiteDatabase.insert(SQLiteHelper.StoryEntry.TABLE_STORY, null, values);
         close();
         return id;
+    }
+
+    public long createOrUpdateDevice(DeviceDAO device) {
+        open();
+        ContentValues values = new ContentValues();
+        values.put(SQLiteHelper.DeviceEntry.IP, device.getIP());
+        values.put(SQLiteHelper.DeviceEntry.SSID, device.getSSID());
+        values.put(SQLiteHelper.DeviceEntry.NAME, device.getName());
+        values.put(SQLiteHelper.DeviceEntry.VENDOR, device.getVendor());
+        values.put(SQLiteHelper.DeviceEntry.LAST_SEEN, System.currentTimeMillis());
+
+        // Devices are uniquely identified by their IP and SSID
+        Cursor savedDevice = sqLiteDatabase.query(SQLiteHelper.DeviceEntry.TABLE_DEVICE,
+                new String[] { SQLiteHelper.DeviceEntry._ID },
+                SQLiteHelper.DeviceEntry.IP + " = ? AND " + SQLiteHelper.DeviceEntry.SSID + " = ?",
+                new String[] { device.getIP(), device.getSSID() }, null,null, null);
+
+        // First, check if device was registered before
+        long id = -1;
+        if (savedDevice.getCount() > 0 && savedDevice.moveToFirst()) {
+            id = savedDevice.getInt(0);
+        }
+        savedDevice.close();
+
+        if (id > 0) {
+            String selection = SQLiteHelper.DeviceEntry._ID + " = ?";
+            String[] selectionArgs = { String.valueOf(id) };
+            id = sqLiteDatabase.update(SQLiteHelper.DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
+        } else {
+            id = sqLiteDatabase.insert(SQLiteHelper.DeviceEntry.TABLE_DEVICE, null, values);
+        }
+        close();
+        return id;
+    }
+
+    public List<DeviceDAO> getDevices(String SSID) {
+        open();
+        Cursor entries = sqLiteDatabase.query(SQLiteHelper.DeviceEntry.TABLE_DEVICE,
+                new String[] {
+                    SQLiteHelper.DeviceEntry._ID,
+                    SQLiteHelper.DeviceEntry.IP,
+                    SQLiteHelper.DeviceEntry.SSID,
+                    SQLiteHelper.DeviceEntry.NAME,
+                    SQLiteHelper.DeviceEntry.VENDOR,
+                    SQLiteHelper.DeviceEntry.LAST_SEEN
+                },
+                SQLiteHelper.DeviceEntry.SSID + " = ?",
+                new String[] { SSID }, null,null,
+                SQLiteHelper.DeviceEntry.IP + " ASC");
+        List<DeviceDAO> devices = new ArrayList<>();
+        if (entries.getCount() != 0) {
+            while (entries.moveToNext()) {
+                int i = -1;
+                DeviceDAO device = new DeviceDAO(entries.getLong(++i));
+                device.setIP(entries.getString(++i));
+                device.setSSID(entries.getString(++i));
+                device.setName(entries.getString(++i));
+                device.setVendor(entries.getString(++i));
+                device.setLastSeen(entries.getString(++i));
+                devices.add(device);
+            }
+        }
+        entries.close();
+        close();
+        return devices;
     }
 
     public boolean updateStory(StoryDAO story) {

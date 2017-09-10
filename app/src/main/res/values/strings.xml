@@ -40,7 +40,10 @@
     <string name="device_icon">Device icon</string>
     <string name="device_hostname">Device hostname</string>
     <string name="device_ip">Device IP address</string>
+    <string name="device_is_self">your smartphone</string>
     <string name="device_vendor">Vendor</string>
+    <string name="select_device_unselected">Add to list</string>
+    <string name="select_device_selected">Selected</string>
 
     <!-- Drawer -->
     <string name="navigation_drawer_open" translatable="false">Open</string>

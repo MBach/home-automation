@@ -12,12 +12,15 @@ import android.text.format.Formatter;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.mbach.homeautomation.R;
+import org.mbach.homeautomation.db.SQLiteDB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,8 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private static final String TAG = "ScanActivity";
 
     private static int t = 0;
+
+    private final SQLiteDB db = new SQLiteDB(this);
 
     private WifiManager wifiManager;
 
@@ -104,6 +109,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 list.add(i);
             }
 
+            String ssid = wifiManager.getConnectionInfo().getSSID();
             for (int i = 0; i < 254; i++) {
                 AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this, currentIp);
                 asyncNetworkRequest.execute(subnet + String.valueOf(list.get(i)));
@@ -143,11 +149,19 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             View device = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
             TextView ip = device.findViewById(R.id.ip);
             if (asyncNetworkRequest.isSelfFound()) {
-                ip.setText(String.format("%s (this is you)", asyncNetworkRequest.getIp()));
+                ip.setText(String.format("%s (" + getResources().getString(R.string.device_is_self) + ")", asyncNetworkRequest.getIp()));
+                ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
+                deviceIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_phone_android_white_48dp));
             } else {
                 ip.setText(asyncNetworkRequest.getIp());
             }
             detectedDevicesLayout.addView(device);
+
+            // Save the device to local database
+            DeviceDAO deviceDAO = new DeviceDAO();
+            deviceDAO.setIP(asyncNetworkRequest.getIp());
+            deviceDAO.setSSID(wifiManager.getConnectionInfo().getSSID());
+            db.createOrUpdateDevice(deviceDAO);
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
@@ -155,5 +169,19 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             t = 0;
             Snackbar.make(findViewById(R.id.scanConstraintLayout), R.string.scan_completed, Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    public void selectDevice(View view) {
+        Button button = view.findViewById(R.id.select_device);
+        boolean isActivated = button.isActivated();
+        if (isActivated) {
+            button.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+            button.setText(R.string.select_device_unselected);
+        } else {
+            button.setTextColor(getResources().getColor(R.color.accent));
+            button.setText(R.string.select_device_selected);
+            // pendingDevices.add(view);
+        }
+        button.setActivated(!isActivated);
     }
 }
