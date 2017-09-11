@@ -49,7 +49,7 @@ public class SQLiteDB {
         return id;
     }
 
-    public long createOrUpdateDevice(DeviceDAO device) {
+    public int createDevice(DeviceDAO device) {
         open();
         ContentValues values = new ContentValues();
         values.put(SQLiteHelper.DeviceEntry.IP, device.getIP());
@@ -57,29 +57,24 @@ public class SQLiteDB {
         values.put(SQLiteHelper.DeviceEntry.NAME, device.getName());
         values.put(SQLiteHelper.DeviceEntry.VENDOR, device.getVendor());
         values.put(SQLiteHelper.DeviceEntry.LAST_SEEN, System.currentTimeMillis());
-
-        // Devices are uniquely identified by their IP and SSID
-        Cursor savedDevice = sqLiteDatabase.query(SQLiteHelper.DeviceEntry.TABLE_DEVICE,
-                new String[] { SQLiteHelper.DeviceEntry._ID },
-                SQLiteHelper.DeviceEntry.IP + " = ? AND " + SQLiteHelper.DeviceEntry.SSID + " = ?",
-                new String[] { device.getIP(), device.getSSID() }, null,null, null);
-
-        // First, check if device was registered before
-        long id = -1;
-        if (savedDevice.getCount() > 0 && savedDevice.moveToFirst()) {
-            id = savedDevice.getInt(0);
-        }
-        savedDevice.close();
-
-        if (id > 0) {
-            String selection = SQLiteHelper.DeviceEntry._ID + " = ?";
-            String[] selectionArgs = { String.valueOf(id) };
-            id = sqLiteDatabase.update(SQLiteHelper.DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
-        } else {
-            id = sqLiteDatabase.insert(SQLiteHelper.DeviceEntry.TABLE_DEVICE, null, values);
-        }
+        int id = (int) sqLiteDatabase.insert(SQLiteHelper.DeviceEntry.TABLE_DEVICE, null, values);
         close();
         return id;
+    }
+
+    public boolean updateDevice(DeviceDAO device) {
+        open();
+        ContentValues values = new ContentValues();
+        values.put(SQLiteHelper.DeviceEntry.IP, device.getIP());
+        values.put(SQLiteHelper.DeviceEntry.SSID, device.getSSID());
+        values.put(SQLiteHelper.DeviceEntry.NAME, device.getName());
+        values.put(SQLiteHelper.DeviceEntry.VENDOR, device.getVendor());
+        values.put(SQLiteHelper.DeviceEntry.LAST_SEEN, System.currentTimeMillis());
+        String selection = SQLiteHelper.DeviceEntry._ID + " = ?";
+        String[] selectionArgs = {String.valueOf(device.getId())};
+        int r = sqLiteDatabase.update(SQLiteHelper.DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
+        close();
+        return r == 1;
     }
 
     public List<DeviceDAO> getDevices(String SSID) {
@@ -100,7 +95,7 @@ public class SQLiteDB {
         if (entries.getCount() != 0) {
             while (entries.moveToNext()) {
                 int i = -1;
-                DeviceDAO device = new DeviceDAO(entries.getLong(++i));
+                DeviceDAO device = new DeviceDAO(entries.getInt(++i));
                 device.setIP(entries.getString(++i));
                 device.setSSID(entries.getString(++i));
                 device.setName(entries.getString(++i));

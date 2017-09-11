@@ -18,7 +18,7 @@
         android:elevation="0dp"
         android:theme="@style/ThemeOverlay.AppCompat"
         app:layout_collapseMode="pin"
-        app:layout_constraintBottom_toTopOf="@+id/scanProgressBar"
+        app:layout_constraintBottom_toTopOf="@+id/swipeRefreshLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -28,14 +28,13 @@
         android:id="@+id/scanProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="0dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="52dp"
         android:indeterminate="true"
         app:layout_constraintBottom_toTopOf="@+id/swipeRefreshLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarScan" />
+        app:layout_constraintTop_toTopOf="@+id/toolbarScan" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -44,7 +43,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scanProgressBar">
+        app:layout_constraintTop_toBottomOf="@+id/toolbarScan">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -56,11 +55,11 @@
                 android:id="@+id/detectedDevicesLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="@dimen/activity_horizontal_margin"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingBottom="40dp">
 
             </LinearLayout>
 

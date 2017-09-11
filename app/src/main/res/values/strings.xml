@@ -14,6 +14,7 @@
 
     <!-- StoryActivity -->
     <string name="add_story">New story</string>
+    <string name="edit_story">Edit story</string>
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="story_name">Story name</string>
@@ -40,10 +41,12 @@
     <string name="device_icon">Device icon</string>
     <string name="device_hostname">Device hostname</string>
     <string name="device_ip">Device IP address</string>
+    <string name="ip_label">IP: </string>
     <string name="device_is_self">your smartphone</string>
     <string name="device_vendor">Vendor</string>
+    <string name="device_offline">Device offline</string>
     <string name="select_device_unselected">Add to list</string>
-    <string name="select_device_selected">Selected</string>
+    <string name="select_device_selected">Added</string>
 
     <!-- Drawer -->
     <string name="navigation_drawer_open" translatable="false">Open</string>

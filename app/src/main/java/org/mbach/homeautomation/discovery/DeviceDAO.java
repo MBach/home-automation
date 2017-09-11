@@ -8,7 +8,7 @@ package org.mbach.homeautomation.discovery;
  */
 public class DeviceDAO {
 
-    private long id;
+    private int id;
     private String IP;
     private String SSID;
     private String name;
@@ -19,7 +19,7 @@ public class DeviceDAO {
         this.id = -1;
     }
 
-    public DeviceDAO(long id) {
+    public DeviceDAO(int id) {
         this.id = id;
     }
 
@@ -64,11 +64,11 @@ public class DeviceDAO {
         this.lastSeen = lastSeen;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 }

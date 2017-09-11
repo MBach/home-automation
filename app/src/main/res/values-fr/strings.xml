@@ -6,6 +6,7 @@
     <string name="story_enabled">Scénario activé</string>
     <string name="story_disabled">Scénario désactivé</string>
     <string name="add_story">Nouveau scénario</string>
+    <string name="edit_story">Modifier scénario</string>
     <string name="action_save">Sauvegarder</string>
     <string name="action_delete">Supprimer</string>
     <string name="story_name">Nom du scénario</string>
@@ -28,6 +29,7 @@
     <string name="device_icon">Icône du périphérique</string>
     <string name="device_hostname">Nom du périphérique</string>
     <string name="device_ip">Adresse IP du périphérique</string>
+    <string name="ip_label">IP : </string>
     <string name="device_vendor">Fabricant</string>
     <string name="category_add_scenario">Ajouter un scénario</string>
     <string name="category_scan_for_devices">Recherche d’objets connectés</string>
@@ -36,5 +38,6 @@
     <string name="drawer_header_email">Accéder à mon compte</string>
     <string name="device_is_self">votre smartphone</string>
     <string name="select_device_unselected">Ajouter à la liste</string>
-    <string name="select_device_selected">Sélectionné</string>
+    <string name="select_device_selected">Ajouté</string>
+    <string name="device_offline">Périphériqué déconnecté</string>
 </resources>

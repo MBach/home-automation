@@ -4,12 +4,15 @@ import android.content.DialogInterface;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -23,7 +26,9 @@ import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ScanActivity can search for devices on your local network.
@@ -34,13 +39,14 @@ import java.util.List;
 public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> {
 
     private static final String TAG = "ScanActivity";
-
     private static int t = 0;
 
+    private final Map<String, DeviceDAO> existingDevices = new HashMap<>();
+    private final List<DeviceDAO> pendingDevices = new ArrayList<>();
+    private final SparseArray<View> cards = new SparseArray<>();
+
     private final SQLiteDB db = new SQLiteDB(this);
-
     private WifiManager wifiManager;
-
     private String currentIp;
 
     @Override
@@ -51,11 +57,34 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
-        Toolbar toolbar = findViewById(R.id.toolbarScan);
+        final Toolbar toolbar = findViewById(R.id.toolbarScan);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        if (wifiManager != null && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo() != null && null != wifiManager.getConnectionInfo().getSSID()) {
+            List<DeviceDAO> devices = db.getDevices(wifiManager.getConnectionInfo().getSSID());
+            for (DeviceDAO deviceDAO : devices) {
+                existingDevices.put(deviceDAO.getIP(), deviceDAO);
+                LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
+                View card = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+                cards.append(deviceDAO.getId(), card);
+                TextView ip = card.findViewById(R.id.ip);
+                ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), deviceDAO.getIP()));
+                detectedDevicesLayout.addView(card);
+            }
+        }
+
+        FloatingActionButton fab = findViewById(R.id.addDeviceFab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Non implémenté", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
+
         startDiscovery();
     }
 
@@ -109,7 +138,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 list.add(i);
             }
 
-            String ssid = wifiManager.getConnectionInfo().getSSID();
             for (int i = 0; i < 254; i++) {
                 AsyncNetworkRequest asyncNetworkRequest = new AsyncNetworkRequest(this, currentIp);
                 asyncNetworkRequest.execute(subnet + String.valueOf(list.get(i)));
@@ -120,10 +148,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     .setMessage(R.string.wifi_disabled)
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            //WifiMonitor wifiMonitor = new WifiMonitor();
-                            //IntentFilter intentFilter = new IntentFilter();
-                            //intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
-                            //registerReceiver(wifiMonitor, intentFilter);
                             if (wifiManager.setWifiEnabled(true)) {
                                 Toast.makeText(ScanActivity.this, R.string.toast_enabling_wifi, Toast.LENGTH_SHORT).show();
                             } else {
@@ -145,23 +169,47 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     public void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest) {
         ++t;
         if (asyncNetworkRequest.isDeviceFound()) {
+
+            // Check if device is already displayed (which means it hasn't been detected yet)
             LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
-            View device = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+            View device;
+            DeviceDAO deviceDAO;
+            boolean deviceWasSavedBefore = existingDevices.containsKey(asyncNetworkRequest.getIp());
+            if (deviceWasSavedBefore) {
+                deviceDAO = existingDevices.get(asyncNetworkRequest.getIp());
+                device = cards.get(deviceDAO.getId());
+            } else {
+                deviceDAO = new DeviceDAO();
+                device = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+            }
+            // Toggle default state of the Card that has been previously instantiated
+            Button deviceOffline = device.findViewById(R.id.device_offline);
+            deviceOffline.setVisibility(View.GONE);
+            Button selectDevice = device.findViewById(R.id.select_device);
+            selectDevice.setVisibility(View.VISIBLE);
+
             TextView ip = device.findViewById(R.id.ip);
             if (asyncNetworkRequest.isSelfFound()) {
-                ip.setText(String.format("%s (" + getResources().getString(R.string.device_is_self) + ")", asyncNetworkRequest.getIp()));
+                String label = String.format("%s%s (%s)", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp(), getResources().getString(R.string.device_is_self));
+                ip.setText(label);
                 ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
                 deviceIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_phone_android_white_48dp));
             } else {
-                ip.setText(asyncNetworkRequest.getIp());
+                ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
             }
-            detectedDevicesLayout.addView(device);
 
-            // Save the device to local database
-            DeviceDAO deviceDAO = new DeviceDAO();
             deviceDAO.setIP(asyncNetworkRequest.getIp());
             deviceDAO.setSSID(wifiManager.getConnectionInfo().getSSID());
-            db.createOrUpdateDevice(deviceDAO);
+
+            // Save the device to local database
+            if (deviceWasSavedBefore) {
+                db.updateDevice(deviceDAO);
+                device.setId(deviceDAO.getId());
+            } else {
+                long id =  db.createDevice(deviceDAO);
+                device.setId((int) id);
+                detectedDevicesLayout.addView(device);
+            }
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
@@ -172,16 +220,41 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     }
 
     public void selectDevice(View view) {
-        Button button = view.findViewById(R.id.select_device);
+        Button button = (Button) view;
+        CardView cardView = (CardView) view.getParent().getParent().getParent();
+
         boolean isActivated = button.isActivated();
         if (isActivated) {
             button.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
             button.setText(R.string.select_device_unselected);
+            for (DeviceDAO device : existingDevices.values()) {
+                if (device.getId() == cardView.getId()) {
+                    pendingDevices.remove(device);
+                    updateFab();
+                    break;
+                }
+            }
         } else {
             button.setTextColor(getResources().getColor(R.color.accent));
             button.setText(R.string.select_device_selected);
-            // pendingDevices.add(view);
+            for (DeviceDAO device : existingDevices.values()) {
+                if (device.getId() == cardView.getId()) {
+                    pendingDevices.add(device);
+                    updateFab();
+                    break;
+                }
+            }
         }
         button.setActivated(!isActivated);
+    }
+
+    private void updateFab() {
+        Log.d(TAG, "updateFab");
+        FloatingActionButton fab = findViewById(R.id.addDeviceFab);
+        if (pendingDevices.isEmpty()) {
+            fab.hide();
+        } else {
+            fab.show();
+        }
     }
 }

@@ -49,7 +49,6 @@ public class StoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
-        setTitle(R.string.add_story);
 
         Toolbar toolbar = findViewById(R.id.toolbarStory);
         setSupportActionBar(toolbar);
@@ -68,7 +67,12 @@ public class StoryActivity extends AppCompatActivity {
                 if (bitmap != null) {
                     coverStory.setImageBitmap(bitmap);
                 }
+                setTitle(R.string.edit_story);
+            } else {
+                setTitle(R.string.add_story);
             }
+        } else {
+            setTitle(R.string.add_story);
         }
     }
 
