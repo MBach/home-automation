@@ -1,12 +1,15 @@
 package org.mbach.homeautomation.discovery;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Story.
  *
  * @author Matthieu BACHELIER
  * @since 2017-09
  */
-public class DeviceDAO {
+public class DeviceDAO implements Parcelable {
 
     private int id;
     private String IP;
@@ -14,6 +17,25 @@ public class DeviceDAO {
     private String name;
     private String vendor;
     private String lastSeen;
+
+    public static final Parcelable.Creator<DeviceDAO> CREATOR = new Parcelable.Creator<DeviceDAO>() {
+        public DeviceDAO createFromParcel(Parcel in) {
+            return new DeviceDAO(in);
+        }
+
+        public DeviceDAO[] newArray(int size) {
+            return new DeviceDAO[size];
+        }
+    };
+
+    private DeviceDAO(Parcel in) {
+        id = in.readInt();
+        IP = in.readString();
+        SSID = in.readString();
+        name = in.readString();
+        vendor = in.readString();
+        lastSeen = in.readString();
+    }
 
     public DeviceDAO() {
         this.id = -1;
@@ -70,5 +92,20 @@ public class DeviceDAO {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @Override
+    public int describeContents() {
+        return hashCode();
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(id);
+        parcel.writeString(IP);
+        parcel.writeString(SSID);
+        parcel.writeString(name);
+        parcel.writeString(vendor);
+        parcel.writeString(lastSeen);
     }
 }

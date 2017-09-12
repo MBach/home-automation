@@ -1,5 +1,9 @@
 package org.mbach.homeautomation.story;
 
+import org.mbach.homeautomation.discovery.DeviceDAO;
+
+import java.util.List;
+
 /**
  * Story.
  *
@@ -12,6 +16,8 @@ public class StoryDAO {
     private String title;
     private boolean enabled;
     private String coverPath;
+
+    private List<DeviceDAO> devices;
 
     public StoryDAO() {
         this.id = -1;
@@ -51,5 +57,13 @@ public class StoryDAO {
 
     public void setCoverPath(String coverPath) {
         this.coverPath = coverPath;
+    }
+
+    public void setDevices(List<DeviceDAO> devices) {
+        this.devices = devices;
+    }
+
+    public List<DeviceDAO> getDevices() {
+        return devices;
     }
 }

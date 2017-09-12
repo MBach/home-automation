@@ -20,8 +20,9 @@
     <string name="story_name">Story name</string>
     <string name="cover_picture">Cover picture</string>
     <string name="add_picture">Add picture</string>
+    <string name="edit_picture">Edit picture</string>
     <string name="device_list">Device list</string>
-    <string name="add_device">Add a device</string>
+    <string name="add_device">Add</string>
     <string name="delete_story_title">Confirm delete</string>
     <string name="delete_story">Do you want to cancel your modifications and delete this story? This cannot be cancelled.</string>
     <string name="toast_story_saved">Story saved</string>

@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
+import android.util.Log;
 
 import org.mbach.homeautomation.discovery.DeviceDAO;
 import org.mbach.homeautomation.story.StoryDAO;
@@ -38,6 +40,8 @@ public class SQLiteDB {
         sqLiteDatabase.close();
     }
 
+    /// STORY
+
     public long createStory(StoryDAO story) {
         open();
         ContentValues values = new ContentValues();
@@ -46,8 +50,86 @@ public class SQLiteDB {
         values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
         long id = sqLiteDatabase.insert(SQLiteHelper.StoryEntry.TABLE_STORY, null, values);
         close();
+        if (story.getDevices() != null && !story.getDevices().isEmpty()) {
+            linkDevicesForStory(story);
+        }
         return id;
     }
+
+    public boolean updateStory(StoryDAO story) {
+        open();
+        ContentValues values = new ContentValues();
+        values.put(SQLiteHelper.StoryEntry.STORY_TITLE, story.getTitle());
+        values.put(SQLiteHelper.StoryEntry.LAST_MODIFIED, System.currentTimeMillis());
+        values.put(SQLiteHelper.StoryEntry.ENABLED, story.isEnabled());
+        values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
+
+        String selection = SQLiteHelper.StoryEntry._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(story.getId()) };
+        int r = sqLiteDatabase.update(SQLiteHelper.StoryEntry.TABLE_STORY, values, selection, selectionArgs);
+        close();
+        if (r == 1 && story.getDevices() != null && !story.getDevices().isEmpty()) {
+            linkDevicesForStory(story);
+        }
+        // If row was modified, 1 is returned
+        return r == 1;
+    }
+
+    public boolean deleteStory(StoryDAO story) {
+        open();
+        String selection = SQLiteHelper.StoryEntry._ID + " = ?";
+        String[] selectionArgs = { String.valueOf(story.getId()) };
+        int count = sqLiteDatabase.delete(SQLiteHelper.StoryEntry.TABLE_STORY, selection, selectionArgs);
+        close();
+        return count > 0;
+    }
+
+    public List<StoryDAO> getStories() {
+        open();
+        Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
+                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
+                SQLiteHelper.StoryEntry._ID,
+                null, null,null,
+                SQLiteHelper.StoryEntry.LAST_MODIFIED + " DESC");
+        List<StoryDAO> stories = new ArrayList<>();
+        if (entries.getCount() != 0) {
+            while (entries.moveToNext()) {
+                StoryDAO story = new StoryDAO(entries.getLong(0));
+                story.setTitle(entries.getString(1));
+                story.setEnabled(entries.getInt(2) == 1);
+                story.setCoverPath(entries.getString(3));
+                getDevicesForStory(story);
+                stories.add(story);
+            }
+        }
+        entries.close();
+        close();
+        return stories;
+    }
+
+    public StoryDAO getStory(long idToFind) {
+        open();
+        Cursor entry = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
+                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
+                SQLiteHelper.StoryEntry._ID + " = ?",
+                new String[] { String.valueOf(idToFind) }, null,null, null);
+        StoryDAO story = null;
+        entry.moveToFirst();
+        long id = entry.getLong(0);
+        if (id == idToFind) {
+            story = new StoryDAO(id);
+            story.setTitle(entry.getString(1));
+            story.setEnabled(entry.getInt(2) == 1);
+            story.setCoverPath(entry.getString(3));
+            Log.d(TAG, "about to load devices");
+            getDevicesForStory(story);
+        }
+        entry.close();
+        close();
+        return story;
+    }
+
+    /// DEVICE
 
     public int createDevice(DeviceDAO device) {
         open();
@@ -77,16 +159,16 @@ public class SQLiteDB {
         return r == 1;
     }
 
-    public List<DeviceDAO> getDevices(String SSID) {
+    public List<DeviceDAO> getDevicesBySSID(String SSID) {
         open();
         Cursor entries = sqLiteDatabase.query(SQLiteHelper.DeviceEntry.TABLE_DEVICE,
                 new String[] {
-                    SQLiteHelper.DeviceEntry._ID,
-                    SQLiteHelper.DeviceEntry.IP,
-                    SQLiteHelper.DeviceEntry.SSID,
-                    SQLiteHelper.DeviceEntry.NAME,
-                    SQLiteHelper.DeviceEntry.VENDOR,
-                    SQLiteHelper.DeviceEntry.LAST_SEEN
+                        SQLiteHelper.DeviceEntry._ID,
+                        SQLiteHelper.DeviceEntry.IP,
+                        SQLiteHelper.DeviceEntry.SSID,
+                        SQLiteHelper.DeviceEntry.NAME,
+                        SQLiteHelper.DeviceEntry.VENDOR,
+                        SQLiteHelper.DeviceEntry.LAST_SEEN
                 },
                 SQLiteHelper.DeviceEntry.SSID + " = ?",
                 new String[] { SSID }, null,null,
@@ -109,70 +191,67 @@ public class SQLiteDB {
         return devices;
     }
 
-    public boolean updateStory(StoryDAO story) {
-        open();
-        ContentValues values = new ContentValues();
-        values.put(SQLiteHelper.StoryEntry.STORY_TITLE, story.getTitle());
-        values.put(SQLiteHelper.StoryEntry.LAST_MODIFIED, System.currentTimeMillis());
-        values.put(SQLiteHelper.StoryEntry.ENABLED, story.isEnabled());
-        values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
+    /// STORY AND DEVICES
 
-        String selection = SQLiteHelper.StoryEntry._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(story.getId()) };
-        int r = sqLiteDatabase.update(SQLiteHelper.StoryEntry.TABLE_STORY, values, selection, selectionArgs);
+    private void linkDevicesForStory(StoryDAO story) {
+        open();
+        sqLiteDatabase.beginTransaction();
+        List<Integer> ids = new ArrayList<>();
+        for (DeviceDAO device : story.getDevices()) {
+            ids.add(device.getId());
+        }
+        String deviceIds = TextUtils.join(",", ids);
+
+        // Clean all for this story
+        String selection = SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ? AND " + SQLiteHelper.StoryDeviceEntry.DEVICE_ID + " IN (?)";
+        String[] selectionArgs = { String.valueOf(story.getId()), deviceIds};
+        sqLiteDatabase.delete(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, selection, selectionArgs);
+
+        Log.d(TAG, "linkDevicesForStory: " + story.getId() + ", ids = " + deviceIds);
+
+        // Then insert values, even if it's the same as previous
+        for (Integer deviceId : ids) {
+            ContentValues values = new ContentValues();
+            values.put(SQLiteHelper.StoryDeviceEntry.STORY_ID, story.getId());
+            values.put(SQLiteHelper.StoryDeviceEntry.DEVICE_ID, deviceId);
+            long id = sqLiteDatabase.insert(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
+            Log.d(TAG, "inserted in junction table: " + id + " for story " + story.getId());
+        }
+        sqLiteDatabase.endTransaction();
         close();
-        // If row was modified, 1 is returned
-        return r == 1;
     }
 
-    public boolean deleteStory(StoryDAO story) {
-        open();
-        String selection = SQLiteHelper.StoryEntry._ID + " = ?";
-        String[] selectionArgs = { String.valueOf(story.getId()) };
-        int count = sqLiteDatabase.delete(SQLiteHelper.StoryEntry.TABLE_STORY, selection, selectionArgs);
-        close();
-        return count > 0;
-    }
-
-    public List<StoryDAO> getStories() {
-        open();
-        Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
-                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
-                SQLiteHelper.StoryEntry._ID,
-                null, null,null,
-                SQLiteHelper.StoryEntry.LAST_MODIFIED + " DESC");
-        List<StoryDAO> stories = new ArrayList<>();
+    private void getDevicesForStory(StoryDAO story) {
+        Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE
+                        + " INNER JOIN " + SQLiteHelper.DeviceEntry.TABLE_DEVICE + " ON " + SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.DEVICE_ID
+                        + " = " + SQLiteHelper.DeviceEntry.TABLE_DEVICE + "." + SQLiteHelper.DeviceEntry._ID,
+                new String[] {
+                    SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.DEVICE_ID,
+                    SQLiteHelper.DeviceEntry.IP,
+                    SQLiteHelper.DeviceEntry.SSID,
+                    SQLiteHelper.DeviceEntry.NAME,
+                    SQLiteHelper.DeviceEntry.VENDOR,
+                    SQLiteHelper.DeviceEntry.LAST_SEEN
+                },
+                SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ?",
+                new String[] { String.valueOf(story.getId()) }, null,null, null);
+        List<DeviceDAO> devices = new ArrayList<>();
         if (entries.getCount() != 0) {
+            Log.d(TAG, "This story has " + entries.getCount() + " devices");
             while (entries.moveToNext()) {
-                StoryDAO story = new StoryDAO(entries.getLong(0));
-                story.setTitle(entries.getString(1));
-                story.setEnabled(entries.getInt(2) == 1);
-                story.setCoverPath(entries.getString(3));
-                stories.add(story);
+                int i = -1;
+                DeviceDAO device = new DeviceDAO(entries.getInt(++i));
+                device.setIP(entries.getString(++i));
+                device.setSSID(entries.getString(++i));
+                device.setName(entries.getString(++i));
+                device.setVendor(entries.getString(++i));
+                device.setLastSeen(entries.getString(++i));
+                devices.add(device);
             }
+        } else {
+            Log.d(TAG, "This story has no device");
         }
         entries.close();
-        close();
-        return stories;
-    }
-
-    public StoryDAO getStory(long idToFind) {
-        open();
-        Cursor entry = sqLiteDatabase.query(SQLiteHelper.StoryEntry.TABLE_STORY,
-                new String[] { SQLiteHelper.StoryEntry._ID, SQLiteHelper.StoryEntry.STORY_TITLE, SQLiteHelper.StoryEntry.ENABLED, SQLiteHelper.StoryEntry.IMAGE },
-                SQLiteHelper.StoryEntry._ID + " = ?",
-                new String[] { String.valueOf(idToFind) }, null,null, null);
-        StoryDAO story = null;
-        entry.moveToFirst();
-        long id = entry.getLong(0);
-        if (id == idToFind) {
-            story = new StoryDAO(id);
-            story.setTitle(entry.getString(1));
-            story.setEnabled(entry.getInt(2) == 1);
-            story.setCoverPath(entry.getString(3));
-        }
-        entry.close();
-        close();
-        return story;
+        story.setDevices(devices);
     }
 }

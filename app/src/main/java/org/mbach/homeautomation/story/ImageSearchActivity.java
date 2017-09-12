@@ -24,6 +24,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 
 import java.util.ArrayList;
@@ -111,7 +112,7 @@ public class ImageSearchActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent();
-                intent.putExtra("file", previous.getTheContent());
+                intent.putExtra(Constants.EXTRA_FILE, previous.getTheContent());
                 setResult(Activity.RESULT_OK, intent);
                 finish();
             }

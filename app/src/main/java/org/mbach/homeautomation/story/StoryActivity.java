@@ -1,5 +1,6 @@
 package org.mbach.homeautomation.story;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,8 +14,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -23,11 +26,15 @@ import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
+import org.mbach.homeautomation.discovery.DeviceDAO;
 import org.mbach.homeautomation.discovery.ScanActivity;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * StoryActivity.
@@ -56,7 +63,9 @@ public class StoryActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        if (getIntent() != null) {
+        if (getIntent() == null) {
+            setTitle(R.string.add_story);
+        } else {
             long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
             if (id != -1) {
                 story = db.getStory(id);
@@ -66,13 +75,16 @@ public class StoryActivity extends AppCompatActivity {
                 Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), story);
                 if (bitmap != null) {
                     coverStory.setImageBitmap(bitmap);
+                    Button addPicture = findViewById(R.id.add_picture);
+                    addPicture.setText(R.string.edit_picture);
+                }
+                if (!story.getDevices().isEmpty()) {
+                    populateDevices();
                 }
                 setTitle(R.string.edit_story);
             } else {
                 setTitle(R.string.add_story);
             }
-        } else {
-            setTitle(R.string.add_story);
         }
     }
 
@@ -95,9 +107,6 @@ public class StoryActivity extends AppCompatActivity {
                     story = new StoryDAO();
                 }
                 story.setTitle(storyEditText.getText().toString());
-                /// TODO
-                //story.setDevices();
-
                 if (hasNewCover) {
                     String cover = saveCover();
                     if (cover != null) {
@@ -149,22 +158,30 @@ public class StoryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult 1");
         if (requestCode == Constants.RQ_STORY_TO_IMAGE && resultCode == RESULT_OK && data != null) {
-            Log.d(TAG, "onActivityResult 2 : " + data.getStringExtra("file"));
             ImageView coverStory = findViewById(R.id.coverStory);
-            Picasso.with(getBaseContext()).load(data.getStringExtra("file")).into(coverStory);
+            Picasso.with(getBaseContext()).load(data.getStringExtra(Constants.EXTRA_FILE)).into(coverStory);
             hasNewCover = true;
+        } else if (requestCode == Constants.RQ_STORY_TO_DEVICE && resultCode == RESULT_OK && data != null) {
+            ArrayList<DeviceDAO> devices = data.getParcelableArrayListExtra(Constants.EXTRA_DEVICES);
+            story.setDevices(devices);
+            Log.d(TAG, "onActivityResult 2");
+            Log.d(TAG, "devices: " + devices.size());
+            populateDevices();
         }
     }
 
     @Override
     public void onActivityReenter(int resultCode, Intent data) {
         super.onActivityReenter(resultCode, data);
-        Log.d(TAG, "onActivityReenter 1");
-
+        Log.d(TAG, "onActivityReenter");
     }
 
     public void addDevice(View view) {
-        startActivity(new Intent(getApplicationContext(), ScanActivity.class));
+        Intent intent = new Intent(getApplicationContext(), ScanActivity.class);
+        if (story != null) {
+            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
+        }
+        startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
     }
 
     public void searchImage(View view) {
@@ -192,6 +209,15 @@ public class StoryActivity extends AppCompatActivity {
             return null;
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    private void populateDevices() {
+        Log.d(TAG, "we have devices registered!");
+        LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
+        for (DeviceDAO device : story.getDevices()) {
+            View deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
+            mainLinearLayout.addView(deviceView);
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.mbach.homeautomation.discovery;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
 
@@ -42,7 +44,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private static int t = 0;
 
     private final Map<String, DeviceDAO> existingDevices = new HashMap<>();
-    private final List<DeviceDAO> pendingDevices = new ArrayList<>();
+    private final ArrayList<DeviceDAO> pendingDevices = new ArrayList<>();
     private final SparseArray<View> cards = new SparseArray<>();
 
     private final SQLiteDB db = new SQLiteDB(this);
@@ -64,11 +66,11 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
 
         if (wifiManager != null && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo() != null && null != wifiManager.getConnectionInfo().getSSID()) {
-            List<DeviceDAO> devices = db.getDevices(wifiManager.getConnectionInfo().getSSID());
+            List<DeviceDAO> devices = db.getDevicesBySSID(wifiManager.getConnectionInfo().getSSID());
             for (DeviceDAO deviceDAO : devices) {
                 existingDevices.put(deviceDAO.getIP(), deviceDAO);
                 LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
-                View card = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+                View card = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
                 cards.append(deviceDAO.getId(), card);
                 TextView ip = card.findViewById(R.id.ip);
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), deviceDAO.getIP()));
@@ -81,10 +83,12 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             @Override
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Non implémenté", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent();
+                intent.putParcelableArrayListExtra(Constants.EXTRA_DEVICES, pendingDevices);
+                setResult(RESULT_OK, intent);
                 finish();
             }
         });
-
         startDiscovery();
     }
 
@@ -180,7 +184,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 device = cards.get(deviceDAO.getId());
             } else {
                 deviceDAO = new DeviceDAO();
-                device = getLayoutInflater().inflate(R.layout.card_device, detectedDevicesLayout, false);
+                device = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
             }
             // Toggle default state of the Card that has been previously instantiated
             Button deviceOffline = device.findViewById(R.id.device_offline);
@@ -249,7 +253,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     }
 
     private void updateFab() {
-        Log.d(TAG, "updateFab");
         FloatingActionButton fab = findViewById(R.id.addDeviceFab);
         if (pendingDevices.isEmpty()) {
             fab.hide();
