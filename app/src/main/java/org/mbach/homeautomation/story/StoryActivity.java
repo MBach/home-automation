@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -156,7 +157,6 @@ public class StoryActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult 1");
         if (requestCode == Constants.RQ_STORY_TO_IMAGE && resultCode == RESULT_OK && data != null) {
             ImageView coverStory = findViewById(R.id.coverStory);
             Picasso.with(getBaseContext()).load(data.getStringExtra(Constants.EXTRA_FILE)).into(coverStory);
@@ -164,8 +164,6 @@ public class StoryActivity extends AppCompatActivity {
         } else if (requestCode == Constants.RQ_STORY_TO_DEVICE && resultCode == RESULT_OK && data != null) {
             ArrayList<DeviceDAO> devices = data.getParcelableArrayListExtra(Constants.EXTRA_DEVICES);
             story.setDevices(devices);
-            Log.d(TAG, "onActivityResult 2");
-            Log.d(TAG, "devices: " + devices.size());
             populateDevices();
         }
     }
@@ -217,6 +215,8 @@ public class StoryActivity extends AppCompatActivity {
         LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
         for (DeviceDAO device : story.getDevices()) {
             View deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
+            TextView ip = deviceView.findViewById(R.id.ip);
+            ip.setText(device.getIP());
             mainLinearLayout.addView(deviceView);
         }
     }

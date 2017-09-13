@@ -98,7 +98,6 @@ public class SQLiteDB {
                 story.setTitle(entries.getString(1));
                 story.setEnabled(entries.getInt(2) == 1);
                 story.setCoverPath(entries.getString(3));
-                getDevicesForStory(story);
                 stories.add(story);
             }
         }
@@ -121,7 +120,6 @@ public class SQLiteDB {
             story.setTitle(entry.getString(1));
             story.setEnabled(entry.getInt(2) == 1);
             story.setCoverPath(entry.getString(3));
-            Log.d(TAG, "about to load devices");
             getDevicesForStory(story);
         }
         entry.close();
@@ -205,8 +203,8 @@ public class SQLiteDB {
         // Clean all for this story
         String selection = SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ? AND " + SQLiteHelper.StoryDeviceEntry.DEVICE_ID + " IN (?)";
         String[] selectionArgs = { String.valueOf(story.getId()), deviceIds};
-        sqLiteDatabase.delete(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, selection, selectionArgs);
-
+        int deleted = sqLiteDatabase.delete(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, selection, selectionArgs);
+        Log.d(TAG, "linkDevicesForStory: " + story.getId() + ", deleted count = " + deleted);
         Log.d(TAG, "linkDevicesForStory: " + story.getId() + ", ids = " + deviceIds);
 
         // Then insert values, even if it's the same as previous
@@ -217,39 +215,37 @@ public class SQLiteDB {
             long id = sqLiteDatabase.insert(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
             Log.d(TAG, "inserted in junction table: " + id + " for story " + story.getId());
         }
+        sqLiteDatabase.setTransactionSuccessful();
         sqLiteDatabase.endTransaction();
         close();
     }
 
     private void getDevicesForStory(StoryDAO story) {
         Cursor entries = sqLiteDatabase.query(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE
-                        + " INNER JOIN " + SQLiteHelper.DeviceEntry.TABLE_DEVICE + " ON " + SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.DEVICE_ID
+                        + " INNER JOIN " + SQLiteHelper.DeviceEntry.TABLE_DEVICE + " ON " + SQLiteHelper.StoryDeviceEntry.DEVICE_ID
                         + " = " + SQLiteHelper.DeviceEntry.TABLE_DEVICE + "." + SQLiteHelper.DeviceEntry._ID,
-                new String[] {
-                    SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.DEVICE_ID,
-                    SQLiteHelper.DeviceEntry.IP,
-                    SQLiteHelper.DeviceEntry.SSID,
-                    SQLiteHelper.DeviceEntry.NAME,
-                    SQLiteHelper.DeviceEntry.VENDOR,
-                    SQLiteHelper.DeviceEntry.LAST_SEEN
-                },
-                SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ?",
-                new String[] { String.valueOf(story.getId()) }, null,null, null);
+            new String[] {
+                SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.DEVICE_ID,
+                SQLiteHelper.DeviceEntry.IP,
+                SQLiteHelper.DeviceEntry.SSID,
+                SQLiteHelper.DeviceEntry.NAME,
+                SQLiteHelper.DeviceEntry.VENDOR,
+                SQLiteHelper.DeviceEntry.LAST_SEEN
+            },
+            SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ?",
+            new String[] { String.valueOf(story.getId()) }, null,null, null);
+
         List<DeviceDAO> devices = new ArrayList<>();
-        if (entries.getCount() != 0) {
-            Log.d(TAG, "This story has " + entries.getCount() + " devices");
-            while (entries.moveToNext()) {
-                int i = -1;
-                DeviceDAO device = new DeviceDAO(entries.getInt(++i));
-                device.setIP(entries.getString(++i));
-                device.setSSID(entries.getString(++i));
-                device.setName(entries.getString(++i));
-                device.setVendor(entries.getString(++i));
-                device.setLastSeen(entries.getString(++i));
-                devices.add(device);
-            }
-        } else {
-            Log.d(TAG, "This story has no device");
+        Log.d(TAG, "This story has " + entries.getCount() + " devices for story " + story.getId());
+        while (entries.moveToNext()) {
+            int i = -1;
+            DeviceDAO device = new DeviceDAO((int) entries.getLong(++i));
+            device.setIP(entries.getString(++i));
+            device.setSSID(entries.getString(++i));
+            device.setName(entries.getString(++i));
+            device.setVendor(entries.getString(++i));
+            device.setLastSeen(entries.getString(++i));
+            devices.add(device);
         }
         entries.close();
         story.setDevices(devices);
