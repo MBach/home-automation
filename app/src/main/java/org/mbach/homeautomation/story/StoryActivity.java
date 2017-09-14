@@ -1,6 +1,5 @@
 package org.mbach.homeautomation.story;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -34,7 +33,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -68,7 +66,9 @@ public class StoryActivity extends AppCompatActivity {
             setTitle(R.string.add_story);
         } else {
             long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
-            if (id != -1) {
+            if (id == -1) {
+                setTitle(R.string.add_story);
+            } else {
                 story = db.getStory(id);
                 EditText storyEditText = findViewById(R.id.storyEditText);
                 storyEditText.setText(story.getTitle());
@@ -83,8 +83,6 @@ public class StoryActivity extends AppCompatActivity {
                     populateDevices();
                 }
                 setTitle(R.string.edit_story);
-            } else {
-                setTitle(R.string.add_story);
             }
         }
     }
@@ -163,6 +161,9 @@ public class StoryActivity extends AppCompatActivity {
             hasNewCover = true;
         } else if (requestCode == Constants.RQ_STORY_TO_DEVICE && resultCode == RESULT_OK && data != null) {
             ArrayList<DeviceDAO> devices = data.getParcelableArrayListExtra(Constants.EXTRA_DEVICES);
+            if (story == null) {
+                story = new StoryDAO();
+            }
             story.setDevices(devices);
             populateDevices();
         }
@@ -210,14 +211,52 @@ public class StoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     */
     private void populateDevices() {
         Log.d(TAG, "we have devices registered!");
         LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
-        for (DeviceDAO device : story.getDevices()) {
-            View deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
+        //mainLinearLayout.removeViews(3, count);
+
+        for (final DeviceDAO deviceDAO : story.getDevices()) {
+            View deviceView = mainLinearLayout.findViewById(deviceDAO.getId());
+            if (deviceView != null) {
+                mainLinearLayout.removeView(deviceView);
+            }
+            deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
+            deviceView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
+                            .setTitle(R.string.remove_device_from_story_title)
+                            .setMessage(R.string.remove_device_from_story_description)
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    removeDeviceFromStory(deviceDAO);
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                }
+                            });
+                    builder.create().show();
+                }
+            });
             TextView ip = deviceView.findViewById(R.id.ip);
-            ip.setText(device.getIP());
+            ip.setText(deviceDAO.getIP());
+            deviceView.setId(deviceDAO.getId());
             mainLinearLayout.addView(deviceView);
         }
+    }
+
+    private void removeDeviceFromStory(DeviceDAO deviceToFind) {
+        List<DeviceDAO> devices = story.getDevices();
+        devices.remove(deviceToFind);
+        story.setDevices(devices);
+        LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
+        View deviceView = mainLinearLayout.findViewById(deviceToFind.getId());
+        mainLinearLayout.removeView(deviceView);
+        populateDevices();
     }
 }

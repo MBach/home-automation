@@ -82,7 +82,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Non implémenté", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent();
                 intent.putParcelableArrayListExtra(Constants.EXTRA_DEVICES, pendingDevices);
                 setResult(RESULT_OK, intent);

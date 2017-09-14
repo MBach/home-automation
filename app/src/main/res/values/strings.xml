@@ -27,6 +27,8 @@
     <string name="delete_story">Do you want to cancel your modifications and delete this story? This cannot be cancelled.</string>
     <string name="toast_story_saved">Story saved</string>
     <string name="toast_story_deleted">Story deleted</string>
+    <string name="remove_device_from_story_title">Remove device</string>
+    <string name="remove_device_from_story_description">Do you want to remove this device from this story?</string>
 
     <!-- ImageSearchActivity -->
     <string name="image_search_title">Search for images</string>

@@ -49,9 +49,10 @@ public class SQLiteDB {
         values.put(SQLiteHelper.StoryEntry.LAST_MODIFIED, System.currentTimeMillis());
         values.put(SQLiteHelper.StoryEntry.IMAGE, story.getCoverPath());
         long id = sqLiteDatabase.insert(SQLiteHelper.StoryEntry.TABLE_STORY, null, values);
+        story.setId(id);
         close();
-        if (story.getDevices() != null && !story.getDevices().isEmpty()) {
-            linkDevicesForStory(story);
+        if (story.getDevices() != null) {
+            setDevicesForStory(story, false);
         }
         return id;
     }
@@ -67,9 +68,10 @@ public class SQLiteDB {
         String selection = SQLiteHelper.StoryEntry._ID + " = ?";
         String[] selectionArgs = { String.valueOf(story.getId()) };
         int r = sqLiteDatabase.update(SQLiteHelper.StoryEntry.TABLE_STORY, values, selection, selectionArgs);
+        Log.d(TAG, "number of rows affected: " + r);
         close();
-        if (r == 1 && story.getDevices() != null && !story.getDevices().isEmpty()) {
-            linkDevicesForStory(story);
+        if (r == 1 && story.getDevices() != null) {
+            setDevicesForStory(story, false);
         }
         // If row was modified, 1 is returned
         return r == 1;
@@ -79,6 +81,7 @@ public class SQLiteDB {
         open();
         String selection = SQLiteHelper.StoryEntry._ID + " = ?";
         String[] selectionArgs = { String.valueOf(story.getId()) };
+        setDevicesForStory(story, true);
         int count = sqLiteDatabase.delete(SQLiteHelper.StoryEntry.TABLE_STORY, selection, selectionArgs);
         close();
         return count > 0;
@@ -142,7 +145,7 @@ public class SQLiteDB {
         return id;
     }
 
-    public boolean updateDevice(DeviceDAO device) {
+    public void updateDevice(DeviceDAO device) {
         open();
         ContentValues values = new ContentValues();
         values.put(SQLiteHelper.DeviceEntry.IP, device.getIP());
@@ -152,9 +155,8 @@ public class SQLiteDB {
         values.put(SQLiteHelper.DeviceEntry.LAST_SEEN, System.currentTimeMillis());
         String selection = SQLiteHelper.DeviceEntry._ID + " = ?";
         String[] selectionArgs = {String.valueOf(device.getId())};
-        int r = sqLiteDatabase.update(SQLiteHelper.DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
+        sqLiteDatabase.update(SQLiteHelper.DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
         close();
-        return r == 1;
     }
 
     public List<DeviceDAO> getDevicesBySSID(String SSID) {
@@ -191,8 +193,7 @@ public class SQLiteDB {
 
     /// STORY AND DEVICES
 
-    private void linkDevicesForStory(StoryDAO story) {
-        open();
+    private void setDevicesForStory(StoryDAO story, boolean removeOnlyDontUpdate) {
         sqLiteDatabase.beginTransaction();
         List<Integer> ids = new ArrayList<>();
         for (DeviceDAO device : story.getDevices()) {
@@ -202,22 +203,24 @@ public class SQLiteDB {
 
         // Clean all for this story
         String selection = SQLiteHelper.StoryDeviceEntry.STORY_ID + " = ? AND " + SQLiteHelper.StoryDeviceEntry.DEVICE_ID + " IN (?)";
-        String[] selectionArgs = { String.valueOf(story.getId()), deviceIds};
+        String[] selectionArgs = { String.valueOf(story.getId()), deviceIds };
         int deleted = sqLiteDatabase.delete(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, selection, selectionArgs);
-        Log.d(TAG, "linkDevicesForStory: " + story.getId() + ", deleted count = " + deleted);
-        Log.d(TAG, "linkDevicesForStory: " + story.getId() + ", ids = " + deviceIds);
+        Log.d(TAG, "setDevicesForStory: " + story.getId() + ", deleted count = " + deleted);
+        Log.d(TAG, "setDevicesForStory: " + story.getId() + ", ids = " + deviceIds);
 
-        // Then insert values, even if it's the same as previous
-        for (Integer deviceId : ids) {
-            ContentValues values = new ContentValues();
-            values.put(SQLiteHelper.StoryDeviceEntry.STORY_ID, story.getId());
-            values.put(SQLiteHelper.StoryDeviceEntry.DEVICE_ID, deviceId);
-            long id = sqLiteDatabase.insert(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
-            Log.d(TAG, "inserted in junction table: " + id + " for story " + story.getId());
+        if (!removeOnlyDontUpdate) {
+            // Then insert values, even if it's the same as previous
+            for (Integer deviceId : ids) {
+                ContentValues values = new ContentValues();
+                values.put(SQLiteHelper.StoryDeviceEntry.STORY_ID, story.getId());
+                values.put(SQLiteHelper.StoryDeviceEntry.DEVICE_ID, deviceId);
+                long id = sqLiteDatabase.insert(SQLiteHelper.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
+                Log.d(TAG, "inserted in junction table: " + id + " for story " + story.getId());
+            }
         }
+
         sqLiteDatabase.setTransactionSuccessful();
         sqLiteDatabase.endTransaction();
-        close();
     }
 
     private void getDevicesForStory(StoryDAO story) {

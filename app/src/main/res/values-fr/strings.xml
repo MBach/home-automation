@@ -1,10 +1,14 @@
 <resources>
     <string name="yes">Oui</string>
     <string name="cancel">Annuler</string>
+
+    <!-- MainActivity -->
     <string name="action_account">Mon compte</string>
     <string name="action_settings">Paramètres</string>
     <string name="story_enabled">Scénario activé</string>
     <string name="story_disabled">Scénario désactivé</string>
+
+    <!-- StoryActivity -->
     <string name="add_story">Nouveau scénario</string>
     <string name="edit_story">Modifier scénario</string>
     <string name="action_save">Sauvegarder</string>
@@ -19,7 +23,13 @@
     <string name="delete_story">Souhaitez-vous abandonner vos modifications et supprimer ce scénario ? Cette action est irréversible.</string>
     <string name="toast_story_saved">Scénario sauvegardé</string>
     <string name="toast_story_deleted">Scénario supprimé</string>
+    <string name="remove_device_from_story_title">Supprimer périphérique</string>
+    <string name="remove_device_from_story_description">Souhaitez-vous retirer ce périphérique de ce scénario ?</string>
+
+    <!-- ImageSearchActivity -->
     <string name="image_search_title">Rechercher une image</string>
+
+    <!-- ScanActivity: right menu settings -->
     <string name="scan_completed">Scan terminé</string>
     <string name="wifi_disabled_title">WIFI désactivé</string>
     <string name="wifi_disabled">Le WIFI doit être activé pour pouvoir scanner votre réseau local. Souhaitez-vous activer le WIFI ?</string>
@@ -31,14 +41,18 @@
     <string name="device_hostname">Nom du périphérique</string>
     <string name="device_ip">Adresse IP du périphérique</string>
     <string name="ip_label">IP : </string>
+    <string name="device_is_self">votre smartphone</string>
     <string name="device_vendor">Fabricant</string>
+    <string name="device_offline">Périphériqué déconnecté</string>
+    <string name="select_device_unselected">Ajouter à la liste</string>
+    <string name="select_device_selected">Ajouté</string>
+
+    <!-- Drawer -->
     <string name="category_add_scenario">Ajouter un scénario</string>
     <string name="category_scan_for_devices">Recherche d’objets connectés</string>
+
+    <!-- Drawer header -->
     <string name="drawer_header_img_content_desc">Image par défaut</string>
     <string name="drawer_header_username">Non connecté</string>
     <string name="drawer_header_email">Accéder à mon compte</string>
-    <string name="device_is_self">votre smartphone</string>
-    <string name="select_device_unselected">Ajouter à la liste</string>
-    <string name="select_device_selected">Ajouté</string>
-    <string name="device_offline">Périphériqué déconnecté</string>
 </resources>
