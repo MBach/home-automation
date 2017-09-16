@@ -4,25 +4,29 @@
     android:id="@+id/cardStory"
     android:layout_width="match_parent"
     android:layout_height="150dp"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
     card_view:cardCornerRadius="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="@dimen/activity_horizontal_margin"
         android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
-            <Switch
-                android:id="@+id/enabled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+        <Switch
+            android:id="@+id/enabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
     </LinearLayout>
 

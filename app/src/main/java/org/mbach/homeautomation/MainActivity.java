@@ -2,7 +2,9 @@ package org.mbach.homeautomation;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -18,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -101,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /**
-     * Initialize the toolbar with a custom icon.
+     * Initialize the toolbar.
      */
     private void initToolbar() {
         final Toolbar toolbar = findViewById(R.id.toolbar);
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /**
-     * Initialize the drawer and apply a custom color for every item.
+     * Initialize the drawer.
      */
     private void setupDrawerLayout() {
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -143,22 +146,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final SQLiteDB db = new SQLiteDB(this);
         for (final StoryDAO storyDAO : db.getStories()) {
 
-            View story = getLayoutInflater().inflate(R.layout.card_story, storiesLayout, false);
-            story.setOnClickListener(new View.OnClickListener() {
+            View storyView = getLayoutInflater().inflate(R.layout.card_story, storiesLayout, false);
+            storyView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
                     intent.putExtra(Constants.EXTRA_STORY_ID, storyDAO.getId());
-                    /// TODO params?
                     startActivityForResult(intent, Constants.RQ_MAIN_TO_STORY);
-                    //Bundle bundle = new Bundle();
-                    //bundle. ?
-                    //startActivity(intent, bundle);
                 }
             });
-            TextView titleStory = story.findViewById(R.id.title);
+            TextView titleStory = storyView.findViewById(R.id.title);
             titleStory.setText(storyDAO.getTitle());
-            Switch toggleStory = story.findViewById(R.id.enabled);
+            Switch toggleStory = storyView.findViewById(R.id.enabled);
             toggleStory.setChecked(storyDAO.isEnabled());
             toggleStory.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -172,12 +171,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
             Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), storyDAO);
             if (bitmap == null) {
-                story.setBackgroundColor(getResources().getColor(R.color.primary));
+                Drawable drawable = getResources().getDrawable(R.drawable.default_scenario);
+                storyView.setBackground(drawable);
             } else {
                 BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-                story.setBackground(bitmapDrawable);
+                storyView.setBackground(bitmapDrawable);
             }
-            storiesLayout.addView(story);
+            storiesLayout.addView(storyView);
         }
     }
 }
