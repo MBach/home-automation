@@ -23,8 +23,11 @@
     <string name="delete_story">Souhaitez-vous abandonner vos modifications et supprimer ce scénario ? Cette action est irréversible.</string>
     <string name="toast_story_saved">Scénario sauvegardé</string>
     <string name="toast_story_deleted">Scénario supprimé</string>
-    <string name="remove_device_from_story_title">Supprimer périphérique</string>
+    <string name="remove_device_from_story_title">Supprimer un périphérique</string>
     <string name="remove_device_from_story_description">Souhaitez-vous retirer ce périphérique de ce scénario ?</string>
+    <string name="snackbar_device_removed_from_story">Périphérique enlevé</string>
+    <string name="remove_image_story_title">Supprimer l’image</string>
+    <string name="remove_image_story_description">Souhaitez-vous retirer l’image associée à ce scénario ?</string>
 
     <!-- ImageSearchActivity -->
     <string name="image_search_title">Rechercher une image</string>

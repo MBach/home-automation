@@ -3,9 +3,11 @@ package org.mbach.homeautomation.story;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -44,12 +46,10 @@ import java.util.List;
 public class StoryActivity extends AppCompatActivity {
 
     private static final String TAG = "StoryActivity";
-
-    private StoryDAO story;
-
     private final SQLiteDB db = new SQLiteDB(this);
-
+    private StoryDAO story;
     private boolean hasNewCover;
+    private DeviceDAO lastRemovedDevice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +114,7 @@ public class StoryActivity extends AppCompatActivity {
                 }
 
                 long storyId = -1;
+                Log.d(TAG, "storyId ? " + story.getId());
                 if (story.getId() == -1) {
                     storyId = db.createStory(story);
                 } else if (db.updateStory(story)) {
@@ -175,22 +176,6 @@ public class StoryActivity extends AppCompatActivity {
         Log.d(TAG, "onActivityReenter");
     }
 
-    public void addDevice(View view) {
-        Intent intent = new Intent(getApplicationContext(), ScanActivity.class);
-        if (story != null) {
-            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
-        }
-        startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
-    }
-
-    public void searchImage(View view) {
-        Intent intent = new Intent(getApplicationContext(), ImageSearchActivity.class);
-        if (story != null) {
-            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
-        }
-        startActivityForResult(intent, Constants.RQ_STORY_TO_IMAGE);
-    }
-
     @Nullable
     private String saveCover() {
         ImageView coverStory = findViewById(R.id.coverStory);
@@ -216,7 +201,7 @@ public class StoryActivity extends AppCompatActivity {
      */
     private void populateDevices() {
         Log.d(TAG, "we have devices registered!");
-        LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
+        final LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
         //mainLinearLayout.removeViews(3, count);
 
         for (final DeviceDAO deviceDAO : story.getDevices()) {
@@ -251,12 +236,78 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     private void removeDeviceFromStory(DeviceDAO deviceToFind) {
-        List<DeviceDAO> devices = story.getDevices();
-        devices.remove(deviceToFind);
+        final List<DeviceDAO> devices = story.getDevices();
+        if (devices.remove(deviceToFind)) {
+            this.lastRemovedDevice = deviceToFind;
+        }
         story.setDevices(devices);
         LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
         View deviceView = mainLinearLayout.findViewById(deviceToFind.getId());
         mainLinearLayout.removeView(deviceView);
+
+        // Add the possibility to restore a device in the list
+        Snackbar.make(mainLinearLayout, getString(R.string.snackbar_device_removed_from_story), Snackbar.LENGTH_LONG)
+            .setAction(getString(R.string.cancel), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (lastRemovedDevice != null) {
+                        story.getDevices().add(lastRemovedDevice);
+                        populateDevices();
+                    }
+                }
+            })
+            .show();
         populateDevices();
+    }
+
+    /**
+     *  Navigate to {@link ScanActivity} for listing connected devices.
+     *
+     * @param view the view
+     */
+    public void addDevice(View view) {
+        Intent intent = new Intent(getApplicationContext(), ScanActivity.class);
+        if (story != null) {
+            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
+        }
+        startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
+    }
+
+    /**
+     * Navigate to {@link ImageSearchActivity} for customizing this story.
+     *
+     * @param view the view
+     */
+    public void searchImage(View view) {
+        Intent intent = new Intent(getApplicationContext(), ImageSearchActivity.class);
+        if (story != null) {
+            intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
+        }
+        startActivityForResult(intent, Constants.RQ_STORY_TO_IMAGE);
+    }
+
+    /**
+     * Ask to one if he wants to remove the attached picture for the current story.
+     *
+     * @param view the view
+     */
+    public void askRemoveImage(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
+            .setTitle(R.string.remove_image_story_title)
+            .setMessage(R.string.remove_image_story_description)
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    ImageView coverStory = findViewById(R.id.coverStory);
+                    Drawable drawable = getResources().getDrawable(R.drawable.default_scenario);
+                    coverStory.setImageDrawable(drawable);
+                    story.setCoverPath(null);
+                    hasNewCover = false;
+                }
+            })
+            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+        builder.create().show();
     }
 }

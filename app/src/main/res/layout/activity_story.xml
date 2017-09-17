@@ -97,7 +97,11 @@
                         android:layout_marginRight="@dimen/activity_horizontal_margin"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:adjustViewBounds="true"
+                        android:clickable="true"
                         android:contentDescription="@string/cover_picture"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:onClick="askRemoveImage"
                         android:scaleType="centerCrop"
                         app:srcCompat="@drawable/default_scenario" />
 
