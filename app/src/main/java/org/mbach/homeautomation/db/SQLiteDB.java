@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import org.mbach.homeautomation.discovery.DeviceDAO;
+import org.mbach.homeautomation.device.DeviceDAO;
 import org.mbach.homeautomation.story.StoryDAO;
 
 import java.util.ArrayList;

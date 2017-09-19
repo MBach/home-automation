@@ -2,6 +2,15 @@
     <string name="yes">Oui</string>
     <string name="cancel">Annuler</string>
 
+    <!-- Drawer -->
+    <string name="category_add_scenario">Ajouter un scénario</string>
+    <string name="category_scan_for_devices">Recherche d’objets connectés</string>
+
+    <!-- Drawer header -->
+    <string name="drawer_header_img_content_desc">Image par défaut</string>
+    <string name="drawer_header_username">Non connecté</string>
+    <string name="drawer_header_email">Accéder à mon compte</string>
+
     <!-- MainActivity -->
     <string name="action_account">Mon compte</string>
     <string name="action_settings">Paramètres</string>
@@ -50,12 +59,7 @@
     <string name="select_device_unselected">Ajouter à la liste</string>
     <string name="select_device_selected">Ajouté</string>
 
-    <!-- Drawer -->
-    <string name="category_add_scenario">Ajouter un scénario</string>
-    <string name="category_scan_for_devices">Recherche d’objets connectés</string>
-
-    <!-- Drawer header -->
-    <string name="drawer_header_img_content_desc">Image par défaut</string>
-    <string name="drawer_header_username">Non connecté</string>
-    <string name="drawer_header_email">Accéder à mon compte</string>
+    <!-- DeviceActivity -->
+    <string name="device_actions_when_enabled">Actions à effectuer lorsque le scénario est activé</string>
+    <string name="device_actions_when_disabled">Actions à effectuer lorsque le scénario est désactivé</string>
 </resources>

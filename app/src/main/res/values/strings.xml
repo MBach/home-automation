@@ -6,6 +6,17 @@
     <string name="yes">Yes</string>
     <string name="cancel">Cancel</string>
 
+    <!-- Drawer -->
+    <string name="navigation_drawer_open" translatable="false">Open</string>
+    <string name="navigation_drawer_close" translatable="false">Close</string>
+    <string name="category_add_scenario">Add a story</string>
+    <string name="category_scan_for_devices">Search for devices</string>
+
+    <!-- Drawer header -->
+    <string name="drawer_header_img_content_desc">Default picture</string>
+    <string name="drawer_header_username">Not connected</string>
+    <string name="drawer_header_email">Open my account</string>
+
     <!-- MainActivity -->
     <string name="action_account">My account</string>
     <string name="action_settings">Settings</string>
@@ -54,15 +65,8 @@
     <string name="select_device_unselected">Add to list</string>
     <string name="select_device_selected">Added</string>
 
-    <!-- Drawer -->
-    <string name="navigation_drawer_open" translatable="false">Open</string>
-    <string name="navigation_drawer_close" translatable="false">Close</string>
-    <string name="category_add_scenario">Add a story</string>
-    <string name="category_scan_for_devices">Search for devices</string>
-
-    <!-- Drawer header -->
-    <string name="drawer_header_img_content_desc">Default picture</string>
-    <string name="drawer_header_username">Not connected</string>
-    <string name="drawer_header_email">Open my account</string>
+    <!-- DeviceActivity -->
+    <string name="device_actions_when_enabled">Actions to perform when story is enabled</string>
+    <string name="device_actions_when_disabled">Actions to perform when story is disabled</string>
 
 </resources>

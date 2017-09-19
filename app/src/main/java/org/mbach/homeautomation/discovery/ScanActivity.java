@@ -26,6 +26,7 @@ import android.widget.Toast;
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
+import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.util.ArrayList;
 import java.util.HashMap;

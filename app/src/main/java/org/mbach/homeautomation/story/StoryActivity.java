@@ -28,7 +28,8 @@ import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.SQLiteDB;
-import org.mbach.homeautomation.discovery.DeviceDAO;
+import org.mbach.homeautomation.device.DeviceActivity;
+import org.mbach.homeautomation.device.DeviceDAO;
 import org.mbach.homeautomation.discovery.ScanActivity;
 
 import java.io.FileNotFoundException;
@@ -160,7 +161,7 @@ public class StoryActivity extends AppCompatActivity {
             ImageView coverStory = findViewById(R.id.coverStory);
             Picasso.with(getBaseContext()).load(data.getStringExtra(Constants.EXTRA_FILE)).into(coverStory);
             hasNewCover = true;
-        } else if (requestCode == Constants.RQ_STORY_TO_DEVICE && resultCode == RESULT_OK && data != null) {
+        } else if (requestCode == Constants.RQ_STORY_TO_SCAN_LAN && resultCode == RESULT_OK && data != null) {
             ArrayList<DeviceDAO> devices = data.getParcelableArrayListExtra(Constants.EXTRA_DEVICES);
             if (story == null) {
                 story = new StoryDAO();
@@ -200,19 +201,27 @@ public class StoryActivity extends AppCompatActivity {
      *
      */
     private void populateDevices() {
-        Log.d(TAG, "we have devices registered!");
         final LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
-        //mainLinearLayout.removeViews(3, count);
 
         for (final DeviceDAO deviceDAO : story.getDevices()) {
-            View deviceView = mainLinearLayout.findViewById(deviceDAO.getId());
-            if (deviceView != null) {
-                mainLinearLayout.removeView(deviceView);
+            final View previousDeviceView = mainLinearLayout.findViewById(deviceDAO.getId());
+            if (previousDeviceView != null) {
+                mainLinearLayout.removeView(previousDeviceView);
             }
-            deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
+            final View deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
             deviceView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), DeviceActivity.class);
+                    intent.putExtra(Constants.EXTRA_DEVICE_ID, deviceDAO.getId());
+                    intent.putExtra(Constants.EXTRA_DEVICE_NAME, deviceDAO.getIP());
+                    startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
+                }
+            });
+
+            deviceView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
                             .setTitle(R.string.remove_device_from_story_title)
                             .setMessage(R.string.remove_device_from_story_description)
@@ -226,6 +235,7 @@ public class StoryActivity extends AppCompatActivity {
                                 }
                             });
                     builder.create().show();
+                    return true;
                 }
             });
             TextView ip = deviceView.findViewById(R.id.ip);
@@ -270,7 +280,7 @@ public class StoryActivity extends AppCompatActivity {
         if (story != null) {
             intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
         }
-        startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
+        startActivityForResult(intent, Constants.RQ_STORY_TO_SCAN_LAN);
     }
 
     /**

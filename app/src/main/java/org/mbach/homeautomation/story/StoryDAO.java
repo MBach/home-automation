@@ -1,6 +1,6 @@
 package org.mbach.homeautomation.story;
 
-import org.mbach.homeautomation.discovery.DeviceDAO;
+import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.util.List;
 

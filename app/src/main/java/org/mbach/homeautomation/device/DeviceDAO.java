@@ -1,4 +1,4 @@
-package org.mbach.homeautomation.discovery;
+package org.mbach.homeautomation.device;
 
 import android.os.Parcel;
 import android.os.Parcelable;
