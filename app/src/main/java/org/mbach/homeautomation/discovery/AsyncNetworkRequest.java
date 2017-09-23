@@ -38,8 +38,8 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
                 Log.d(TAG, inetAddress.getHostName());
                 Log.d(TAG, inetAddress.getCanonicalHostName());
                 Log.d(TAG, inetAddress.getHostAddress());
-                //Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getHostName());
-                //Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getCanonicalHostName());
+                Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getHostName());
+                Log.d(TAG, InetAddress.getByName(inetAddress.getHostAddress()).getCanonicalHostName());
 
                 ip = inetAddress.getHostAddress();
                 deviceFound = true;
