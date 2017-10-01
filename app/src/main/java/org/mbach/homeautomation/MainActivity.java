@@ -23,7 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.mbach.homeautomation.db.SQLiteDB;
+import org.mbach.homeautomation.db.OuiDB;
+import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
 import org.mbach.homeautomation.story.StoryActivity;
 import org.mbach.homeautomation.story.StoryDAO;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initOuiDb();
         initToolbar();
         setupDrawerLayout();
         loadStories();
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void loadStories() {
         LinearLayout storiesLayout = findViewById(R.id.storiesLayout);
-        final SQLiteDB db = new SQLiteDB(this);
+        final HomeAutomationDB db = new HomeAutomationDB(this);
         for (final StoryDAO storyDAO : db.getStories()) {
 
             View storyView = getLayoutInflater().inflate(R.layout.card_story, storiesLayout, false);
@@ -177,5 +179,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
             storiesLayout.addView(storyView);
         }
+    }
+
+    private void initOuiDb() {
+        OuiDB ouiDB = new OuiDB(this);
+        ouiDB.populateFromLocalResource();
     }
 }

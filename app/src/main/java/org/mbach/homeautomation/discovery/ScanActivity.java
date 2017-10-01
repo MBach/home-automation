@@ -25,9 +25,13 @@ import android.widget.Toast;
 
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
-import org.mbach.homeautomation.db.SQLiteDB;
+import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.device.DeviceDAO;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +52,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private final ArrayList<DeviceDAO> pendingDevices = new ArrayList<>();
     private final SparseArray<View> cards = new SparseArray<>();
 
-    private final SQLiteDB db = new SQLiteDB(this);
+    private final HomeAutomationDB db = new HomeAutomationDB(this);
     private WifiManager wifiManager;
     private String currentIp;
 
@@ -132,6 +136,8 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     });
             builder.create().show();
         } else if (wifiManager.isWifiEnabled()) {
+            readArp();
+
             String subnet = getLocalSubnet();
             List<Integer> list = new ArrayList<>();
             for (int i = 1; i <= 10; i++) {
@@ -166,6 +172,20 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                         }
                     });
             builder.create().show();
+        }
+    }
+
+    private void readArp() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File("/proc/net/arp")));
+            String total = "";
+            String line;
+            while((line = br.readLine()) != null) {
+                total += line + "\n";
+            }
+            Log.d(TAG, total);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 

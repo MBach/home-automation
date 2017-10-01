@@ -3,7 +3,6 @@ package org.mbach.homeautomation.db;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.provider.BaseColumns;
 
 /**
  * SQLiteHelper.
@@ -13,72 +12,24 @@ import android.provider.BaseColumns;
  */
 class SQLiteHelper extends SQLiteOpenHelper {
 
-    /**
-     * StoryEntry is an inner class which maps to a Story.
-     *
-     * @link org.mbach.homeautomation.story.StoryDAO
-     */
-    static class StoryEntry implements BaseColumns {
-        static final String TABLE_STORY = "table_story";
-        static final String STORY_TITLE = "STORY_TITLE";
-        static final String LAST_MODIFIED = "LAST_MODIFIED";
-        static final String ENABLED = "ENABLED";
-        static final String IMAGE = "IMAGE";
-        static final String CREATE_TABLE_STORY = "CREATE TABLE " + TABLE_STORY + " ("
-                + _ID + " INTEGER PRIMARY KEY, "
-                + STORY_TITLE + " TEXT NOT NULL, "
-                + LAST_MODIFIED + " INTEGER NOT NULL, "
-                + ENABLED + " INTEGER DEFAULT 1, "
-                + IMAGE + " TEXT);";
-    }
-
-    /**
-     *
-     */
-    static class DeviceEntry implements BaseColumns {
-        static final String TABLE_DEVICE = "table_device";
-        static final String IP = "IP";
-        static final String SSID = "SSID";
-        static final String NAME = "NAME";
-        static final String VENDOR = "VENDOR";
-        static final String LAST_SEEN = "LAST_SEEN";
-        static final String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + " ("
-                + _ID + " INTEGER PRIMARY KEY, "
-                + IP + " TEXT NOT NULL, "
-                + SSID + " TEXT NOT NULL, "
-                + NAME + " TEXT, "
-                + VENDOR + " TEXT, "
-                + LAST_SEEN + " INTEGER NOT NULL);";
-    }
-
-    /**
-     *
-     */
-    static class StoryDeviceEntry implements BaseColumns {
-        static final String TABLE_JUNCTION_STORY_DEVICE = "table_story_device";
-        static final String STORY_ID = "STORY_ID";
-        static final String DEVICE_ID = "DEVICE_ID";
-        static final String CREATE_TABLE_STORY_DEVICE = "CREATE TABLE " + TABLE_JUNCTION_STORY_DEVICE + " ("
-                + STORY_ID + " INTEGER NOT NULL, "
-                + DEVICE_ID + " INTEGER NOT NULL);";
-    }
-
     SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL(StoryEntry.CREATE_TABLE_STORY);
-        sqLiteDatabase.execSQL(DeviceEntry.CREATE_TABLE_DEVICE);
-        sqLiteDatabase.execSQL(StoryDeviceEntry.CREATE_TABLE_STORY_DEVICE);
+        sqLiteDatabase.execSQL(OuiDB.OuiEntry.CREATE_TABLE_OUI);
+        sqLiteDatabase.execSQL(HomeAutomationDB.StoryEntry.CREATE_TABLE_STORY);
+        sqLiteDatabase.execSQL(HomeAutomationDB.DeviceEntry.CREATE_TABLE_DEVICE);
+        sqLiteDatabase.execSQL(HomeAutomationDB.StoryDeviceEntry.CREATE_TABLE_STORY_DEVICE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", StoryEntry.TABLE_STORY));
-        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", DeviceEntry.TABLE_DEVICE));
-        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE));
+        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", OuiDB.OuiEntry.CREATE_TABLE_OUI));
+        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.StoryEntry.TABLE_STORY));
+        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.DeviceEntry.TABLE_DEVICE));
+        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE));
         onCreate(sqLiteDatabase);
     }
 }

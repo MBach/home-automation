@@ -27,7 +27,7 @@ import com.squareup.picasso.Picasso;
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
-import org.mbach.homeautomation.db.SQLiteDB;
+import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.device.DeviceActivity;
 import org.mbach.homeautomation.device.DeviceDAO;
 import org.mbach.homeautomation.discovery.ScanActivity;
@@ -47,7 +47,7 @@ import java.util.List;
 public class StoryActivity extends AppCompatActivity {
 
     private static final String TAG = "StoryActivity";
-    private final SQLiteDB db = new SQLiteDB(this);
+    private final HomeAutomationDB db = new HomeAutomationDB(this);
     private StoryDAO story;
     private boolean hasNewCover;
     private DeviceDAO lastRemovedDevice;
