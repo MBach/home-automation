@@ -19,6 +19,7 @@ class SQLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(OuiDB.OuiEntry.CREATE_TABLE_OUI);
+        sqLiteDatabase.execSQL(OuiDB.OuiEntry.CREATE_INDEX);
         sqLiteDatabase.execSQL(HomeAutomationDB.StoryEntry.CREATE_TABLE_STORY);
         sqLiteDatabase.execSQL(HomeAutomationDB.DeviceEntry.CREATE_TABLE_DEVICE);
         sqLiteDatabase.execSQL(HomeAutomationDB.StoryDeviceEntry.CREATE_TABLE_STORY_DEVICE);

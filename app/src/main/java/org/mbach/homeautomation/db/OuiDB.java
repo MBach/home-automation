@@ -8,10 +8,13 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import org.mbach.homeautomation.R;
+import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * HomeAutomationDB.
@@ -29,11 +32,6 @@ public class OuiDB {
 
     private static final String TAG = "OuiDB";
 
-    /**
-     * StoryEntry is an inner class which maps to a Story.
-     *
-     * @link org.mbach.homeautomation.story.StoryDAO
-     */
     static class OuiEntry implements BaseColumns {
         static final String TABLE_OUI = "table_oui";
         static final String MAC = "MAC";
@@ -44,6 +42,7 @@ public class OuiDB {
                 + MAC + " TEXT NOT NULL, "
                 + SHORT_NAME + " TEXT NOT NULL, "
                 + FULL_NAME + " TEXT);";
+        static final String CREATE_INDEX = "CREATE INDEX mac_idx ON " + TABLE_OUI + "(" + MAC + ");";
     }
 
     public OuiDB(Context context){
@@ -69,11 +68,11 @@ public class OuiDB {
 
     public void populateFromLocalResource() {
         open();
-        Log.d(TAG, "populateFromLocalResource");
         if (hasData()) {
-            Log.d(TAG, "we have some data, skipping...");
+            close();
             return;
         }
+        Log.d(TAG, "populateFromLocalResource");
         sqLiteDatabase.beginTransaction();
 
         try {
@@ -97,4 +96,23 @@ public class OuiDB {
         close();
     }
 
+    public String findVendor(String macAddress) {
+        open();
+        Cursor entries = sqLiteDatabase.query(OuiEntry.TABLE_OUI,
+                new String[] { OuiEntry.SHORT_NAME, OuiEntry.FULL_NAME },
+                OuiEntry.MAC + " = ?",
+                new String[] { macAddress.toUpperCase() }, null,null,null);
+        String vendor = null;
+        if (entries.getCount() != 0) {
+            entries.moveToFirst();
+            if (entries.getString(1).isEmpty()) {
+                vendor = entries.getString(0);
+            } else {
+                vendor = entries.getString(1);
+            }
+        }
+        entries.close();
+        close();
+        return vendor;
+    }
 }

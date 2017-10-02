@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
+import org.mbach.homeautomation.db.OuiDB;
 import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.io.BufferedReader;
@@ -53,6 +55,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private final SparseArray<View> cards = new SparseArray<>();
 
     private final HomeAutomationDB db = new HomeAutomationDB(this);
+    private final OuiDB ouiDB = new OuiDB(this);
     private WifiManager wifiManager;
     private String currentIp;
 
@@ -136,8 +139,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     });
             builder.create().show();
         } else if (wifiManager.isWifiEnabled()) {
-            readArp();
-
             String subnet = getLocalSubnet();
             List<Integer> list = new ArrayList<>();
             for (int i = 1; i <= 10; i++) {
@@ -175,20 +176,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
-    private void readArp() {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(new File("/proc/net/arp")));
-            String total = "";
-            String line;
-            while((line = br.readLine()) != null) {
-                total += line + "\n";
-            }
-            Log.d(TAG, total);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
     @Override
     public void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest) {
         ++t;
@@ -211,6 +198,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             deviceOffline.setVisibility(View.GONE);
             Button selectDevice = device.findViewById(R.id.select_device);
             selectDevice.setVisibility(View.VISIBLE);
+            TextView vendor = device.findViewById(R.id.vendor);
 
             TextView ip = device.findViewById(R.id.ip);
             if (asyncNetworkRequest.isSelfFound()) {
@@ -218,8 +206,14 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 ip.setText(label);
                 ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
                 deviceIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_phone_android_white_48dp));
+                vendor.setVisibility(View.GONE);
+                selectDevice.setEnabled(false);
             } else {
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
+                String vendorName = getVendor(asyncNetworkRequest.getIp());
+                if (vendorName != null) {
+                    vendor.setText(vendorName);
+                }
             }
 
             deviceDAO.setIP(asyncNetworkRequest.getIp());
@@ -241,6 +235,24 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             t = 0;
             Snackbar.make(findViewById(R.id.scanConstraintLayout), R.string.scan_completed, Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    @Nullable
+    private String getVendor(String ip) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File("/proc/net/arp")));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(ip)) {
+                    String mac = line.substring(41, 49);
+                    Log.d(TAG, "mac: " + mac);
+                    return ouiDB.findVendor(mac);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        return null;
     }
 
     public void selectDevice(View view) {
