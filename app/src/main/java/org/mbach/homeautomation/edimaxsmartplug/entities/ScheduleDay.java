@@ -6,5 +6,5 @@ public class ScheduleDay {
 	
 	public boolean isActive;
 	
-	public ArrayList<ScheduleTime> scheduleTimes = new ArrayList<ScheduleTime>();
+	public ArrayList<ScheduleTime> scheduleTimes = new ArrayList<>();
 }

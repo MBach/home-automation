@@ -82,6 +82,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 cards.append(deviceDAO.getId(), card);
                 TextView ip = card.findViewById(R.id.ip);
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), deviceDAO.getIP()));
+                if (deviceDAO.getVendor() != null) {
+                    TextView vendor = card.findViewById(R.id.vendor);
+                    vendor.setText(deviceDAO.getVendor());
+                }
                 detectedDevicesLayout.addView(card);
             }
         }
@@ -213,6 +217,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 String vendorName = getVendor(asyncNetworkRequest.getIp());
                 if (vendorName != null) {
                     vendor.setText(vendorName);
+                    deviceDAO.setVendor(vendorName);
                 }
             }
 
@@ -225,15 +230,17 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 device.setId(deviceDAO.getId());
             } else {
                 long id =  db.createDevice(deviceDAO);
+                deviceDAO.setId((int) id);
                 device.setId((int) id);
                 detectedDevicesLayout.addView(device);
+                existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
             }
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
             scanProgressBar.setVisibility(View.GONE);
             t = 0;
-            Snackbar.make(findViewById(R.id.scanConstraintLayout), R.string.scan_completed, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.scan_completed, Snackbar.LENGTH_LONG).show();
         }
     }
 

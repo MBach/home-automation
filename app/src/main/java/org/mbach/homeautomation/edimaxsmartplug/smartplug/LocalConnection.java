@@ -15,31 +15,30 @@ import java.util.Scanner;
 
 public class LocalConnection implements PlugConnection {
 
-	private PlugCredentials credentials;
+	private final PlugCredentials credentials;
 	private URL url;
 
-	private String urlTemplate = "http://%s:10000/smartplug.cgi";
+	private static final String URL_TEMPLATE = "http://%s:10000/smartplug.cgi";
 	
 	public LocalConnection(PlugCredentials credentials, String ip) throws MalformedURLException {
-
 		this.credentials = credentials;
-		this.url = new URL(String.format(urlTemplate, ip));
+		this.url = new URL(String.format(URL_TEMPLATE, ip));
 	}
 	
-	@Override
 	/**
 	 * Does nothing because when communicating on local network 
 	 * there's no connection to the cloud service.
 	 */
+	@Override
 	public void connect() {
 		
 	}
 	
-	@Override
 	/**
 	 * Always returns true because when communicating on local network 
 	 * there's no connection to the cloud service.
 	 */
+	@Override
 	public boolean isConnected() {
 		return false;
 	}
@@ -47,7 +46,7 @@ public class LocalConnection implements PlugConnection {
 	@Override
 	public String sendCommand(String xml) throws Exception{
 
-		if(!this.isConnected()) {
+		if (!this.isConnected()) {
 			this.connect();
 		}
 		
@@ -86,7 +85,7 @@ public class LocalConnection implements PlugConnection {
 			 */
 			int statusCode = urlConnection.getResponseCode();
 			
-			if(statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+			if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				// The credentials are wrong => the user is not authorized
 				throw new Exception("Unauthorized: The supplied plug credentials are wrong.");
 				
@@ -105,18 +104,18 @@ public class LocalConnection implements PlugConnection {
 			return result;
 			
 		} finally {
-			if(input != null) input.close();
-			if(scanner != null) scanner.close();
-			if(writer != null) writer.close();
-			if(output != null) output.close();
+			if (input != null) input.close();
+			if (scanner != null) scanner.close();
+			if (writer != null) writer.close();
+			if (output != null) output.close();
 		}
 	}
 	
-	@Override
 	/**
 	 * Unimplemented because when communicating on local network 
 	 * there's no connection to the cloud service.
 	 */
+	@Override
 	public void disconnect() {
 		
 	}

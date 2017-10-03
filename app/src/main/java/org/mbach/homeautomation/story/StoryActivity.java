@@ -240,6 +240,8 @@ public class StoryActivity extends AppCompatActivity {
             });
             TextView ip = deviceView.findViewById(R.id.ip);
             ip.setText(deviceDAO.getIP());
+            TextView vendor = deviceView.findViewById(R.id.vendor);
+            vendor.setText(deviceDAO.getVendor());
             deviceView.setId(deviceDAO.getId());
             mainLinearLayout.addView(deviceView);
         }

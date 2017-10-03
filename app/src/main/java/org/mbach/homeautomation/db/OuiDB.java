@@ -8,13 +8,10 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 import org.mbach.homeautomation.R;
-import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * HomeAutomationDB.
@@ -26,7 +23,7 @@ public class OuiDB {
     private SQLiteDatabase sqLiteDatabase;
     private static final int DB_VERSION = 1;
     private final SQLiteHelper helper;
-    private Context context;
+    private final Context context;
 
     private static final String DB_NAME = "oui.db";
 

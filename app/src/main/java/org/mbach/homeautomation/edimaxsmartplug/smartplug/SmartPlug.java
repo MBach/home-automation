@@ -16,11 +16,11 @@ public class SmartPlug {
 
 	private PlugConnection connection;
 
-	public static enum TimeUnit {
+	public enum TimeUnit {
 		HOUR, DAY, MONTH 
 	}
 
-	public static enum State {
+	public enum State {
 		ON, OFF
 	}
 
@@ -31,11 +31,10 @@ public class SmartPlug {
 	/**
 	 * Only for debugging.
 	 * 
-	 * @throws Exception
+	 * @throws Exception exception
 	 */
 	@SuppressWarnings("unused")
 	private void getAll() throws Exception {
-
 		String xml = RequestTemplates.getAll();
 		String response = this.connection.sendCommand(xml);
 		System.out.println(response);		
@@ -43,22 +42,18 @@ public class SmartPlug {
 
 	// TODO Parse time response.
 	public String getSystemTime() throws Exception {
-
 		String xml = RequestTemplates.getGetSystemTime();
-		String response = this.connection.sendCommand(xml);
-		return response;
+		return this.connection.sendCommand(xml);
 	}
 
 	public ScheduleDay[] getSchedule() throws Exception {
-
 		String xml = RequestTemplates.getGetSchedule();
 		String response = this.connection.sendCommand(xml);
 
 		return Schedule.createFromDocument(EdimaxUtil.getDocumentFromString(response));
 	}
 
-	public State getState() throws Exception {
-
+	private State getState() throws Exception {
 		String xml = RequestTemplates.getGetStatus();
 		String response = this.connection.sendCommand(xml);
 
@@ -75,34 +70,23 @@ public class SmartPlug {
 	}
 
 	public PowerInformation getPowerInformation() throws Exception {
-
 		String xml = RequestTemplates.getGetPowerInfo();
 		String response = this.connection.sendCommand(xml);
-
 		Document document = EdimaxUtil.getDocumentFromString(response);
-		PowerInformation powerInfo = PowerInformation.createFromDocument(document);
-
-		return powerInfo;
+		return PowerInformation.createFromDocument(document);
 	}
 
 	// TODO Parse power usage response.
 	public String getPowerUsage() throws Exception {
-
 		String xml = RequestTemplates.getPowerUsage();
-		String response = this.connection.sendCommand(xml);
-
-		return response;
+		return this.connection.sendCommand(xml);
 	}
 
 	public SystemInformation getSystemInformation() throws Exception {
-
 		String xml = RequestTemplates.getGetSystemInfo();
 		String response = this.connection.sendCommand(xml);
-
 		Document document = EdimaxUtil.getDocumentFromString(response);
-		SystemInformation systemInfo = SystemInformation.createFromDocument(document);
-
-		return systemInfo;
+		return SystemInformation.createFromDocument(document);
 	}
 
 	// TODO Prevent adding of values when querying for a day history.
@@ -117,10 +101,7 @@ public class SmartPlug {
 
 		String historyString = xpath.evaluate("/SMARTPLUG/CMD/POWER_HISTORY/Device.System.Power.History.Energy", source);
 
-		/**
-		 * Split the history string into parts
-		 * which are separated by '-' and decode each part.
-		 */
+		// Split the history string into part which are separated by '-' and decode each part.
 		String[] arr = historyString.split("-");
 		float[] doubleArr = new float[arr.length];
 
@@ -140,7 +121,6 @@ public class SmartPlug {
 	private float decodeHistoryPart(String part) throws Exception {
 
 		float result = 0;
-
 		if (part.equals("=")) {
 			return 0;
 		}
@@ -155,7 +135,6 @@ public class SmartPlug {
 	}
 
 	public void setName(String name) throws Exception {
-
 		String xml = RequestTemplates.getSetName(name);
 		this.connection.sendCommand(xml);
 	}
@@ -169,14 +148,12 @@ public class SmartPlug {
 		}
 	}
 
-	public void switchOn() throws Exception {
-
+	private void switchOn() throws Exception {
 		String xml = RequestTemplates.getSwitchOn();
 		this.connection.sendCommand(xml);
 	}
 
-	public void switchOff() throws Exception {
-
+	private void switchOff() throws Exception {
 		String xml = RequestTemplates.getSwitchOff();
 		this.connection.sendCommand(xml);
 	}

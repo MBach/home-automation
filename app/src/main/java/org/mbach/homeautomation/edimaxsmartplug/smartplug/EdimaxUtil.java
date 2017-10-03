@@ -11,9 +11,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class EdimaxUtil {
+class EdimaxUtil {
 
-	public static Document getDocumentFromString(String xml) throws ParserConfigurationException, SAXException, IOException {
+	static Document getDocumentFromString(String xml) throws ParserConfigurationException, SAXException, IOException {
 
 		InputSource source = new InputSource(new StringReader(xml));
 
@@ -26,7 +26,7 @@ public class EdimaxUtil {
 		return document;
 	}
 
-	public static int numberFromCharCode(int charCode) throws Exception {
+	static int numberFromCharCode(int charCode) throws Exception {
 		if (charCode >= Character.codePointAt("0", 0) && charCode <= Character.codePointAt("9", 0)) {
 			return charCode - Character.codePointAt("0", 0);
 		}

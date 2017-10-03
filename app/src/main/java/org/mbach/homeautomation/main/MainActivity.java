@@ -1,4 +1,4 @@
-package org.mbach.homeautomation;
+package org.mbach.homeautomation.main;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -23,9 +23,12 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.mbach.homeautomation.db.OuiDB;
+import org.mbach.homeautomation.Constants;
+import org.mbach.homeautomation.ImageUtils;
+import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
+import org.mbach.homeautomation.main.AsyncPopulateDb;
 import org.mbach.homeautomation.story.StoryActivity;
 import org.mbach.homeautomation.story.StoryDAO;
 
@@ -182,7 +185,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initOuiDb() {
-        OuiDB ouiDB = new OuiDB(this);
-        ouiDB.populateFromLocalResource();
+        AsyncPopulateDb asyncNetworkRequest = new AsyncPopulateDb(this);
+        asyncNetworkRequest.execute();
     }
+
+
 }

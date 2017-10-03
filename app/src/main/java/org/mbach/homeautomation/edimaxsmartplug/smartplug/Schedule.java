@@ -4,11 +4,9 @@ import org.mbach.homeautomation.edimaxsmartplug.entities.ScheduleDay;
 import org.mbach.homeautomation.edimaxsmartplug.entities.ScheduleTime;
 import org.w3c.dom.Document;
 
-import java.time.LocalTime;
+class Schedule {
 
-public class Schedule {
-
-	public static ScheduleDay[] createFromDocument(Document document) throws Exception {
+	static ScheduleDay[] createFromDocument(Document document) throws Exception {
 
 		ScheduleDay[] scheduleDays = new ScheduleDay[7];
 		
@@ -23,7 +21,7 @@ public class Schedule {
 		return scheduleDays;
 	}
 
-	public static ScheduleDay decodeScheduleDay(String scheduleDayStr) throws Exception {
+	private static ScheduleDay decodeScheduleDay(String scheduleDayStr) throws Exception {
 
 		ScheduleDay scheduleDay = new ScheduleDay();
 
@@ -33,10 +31,9 @@ public class Schedule {
 
 		String[] sched_items = scheduleDayStr.split("-");
 
-		for(int i = 0; i < sched_items.length; i++) {
+		for(String timeString : sched_items) {
 
 			ScheduleTime scheduleTime = new ScheduleTime();
-			String timeString = sched_items[i];
 			boolean isActiveTime = timeString.endsWith("1");
 
 			int start_min = EdimaxUtil.numberFromCharCode(Character.codePointAt(timeString, 0)) * 60 + EdimaxUtil.numberFromCharCode(Character.codePointAt(timeString, 1));

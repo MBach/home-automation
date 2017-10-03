@@ -7,15 +7,14 @@ import java.time.format.DateTimeFormatter;
 
 public class PowerInformation {
 
-	private LocalDate lastToggleTime;
-	private double nowCurrent;
-	private double nowPower;
-	private double nowEnergyDay;
-	private double nowEnergyWeek;
-	private double nowEnergyMonth;
+	private final LocalDate lastToggleTime;
+	private final double nowCurrent;
+	private final double nowPower;
+	private final double nowEnergyDay;
+	private final double nowEnergyWeek;
+	private final double nowEnergyMonth;
 	
-	public PowerInformation(LocalDate lastToggleTime, double nowCurrent, double nowPower, double nowEnergyDay, double nowEnergyWeek, double nowEnergyMonth) {
-		
+	private PowerInformation(LocalDate lastToggleTime, double nowCurrent, double nowPower, double nowEnergyDay, double nowEnergyWeek, double nowEnergyMonth) {
 		this.lastToggleTime = lastToggleTime;
 		this.nowCurrent = nowCurrent;
 		this.nowPower = nowPower;
@@ -43,8 +42,7 @@ public class PowerInformation {
 		Double nowEnergyWeek = Double.parseDouble(nowEnergyWeekString);
 		Double nowEnergyMonth = Double.parseDouble(nowEnergyMonthString);
 		
-		PowerInformation powerInfo = new PowerInformation(lastToggleTime, nowCurrent, nowPower, nowEnergyDay, nowEnergyWeek, nowEnergyMonth);
-		return powerInfo;
+		return new PowerInformation(lastToggleTime, nowCurrent, nowPower, nowEnergyDay, nowEnergyWeek, nowEnergyMonth);
 	}
 
 	public LocalDate getLastToggleTime() {

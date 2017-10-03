@@ -69,7 +69,7 @@ public class SystemInformation {
 	// Name
 	private String name;
 
-	public SystemInformation(String cus, String model, String firmwareVersion,
+	private SystemInformation(String cus, String model, String firmwareVersion,
 			String macAddress, String smtpServerAddress, String smtpServerPort,
 			String smtpServerCertificate, String smtpServerAuthEnable,
 			String smtpEmailSender, String smtpEmailRecipient,
@@ -130,8 +130,8 @@ public class SystemInformation {
 		timeZoneServerAddresses[2] = timeZoneServerAddress3String;
 		timeZoneServerAddresses[3] = timeZoneServerAddress4String;
 		timeZoneServerAddresses[4] = timeZoneServerAddress5String;
-		
-		SystemInformation systemInfo = new SystemInformation(
+
+		return new SystemInformation(
 			cusString,
 			modelString,
 			firmwareVersionString,
@@ -150,8 +150,6 @@ public class SystemInformation {
 			timeZoneDaylightEnabledString,
 			name
 		);
-		
-		return systemInfo;
 	}
 
 	@Override

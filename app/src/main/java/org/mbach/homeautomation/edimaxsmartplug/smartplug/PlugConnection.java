@@ -2,11 +2,11 @@ package org.mbach.homeautomation.edimaxsmartplug.smartplug;
 
 public interface PlugConnection {
 	
-	public void connect();
+	void connect();
 	
-	public boolean isConnected();
+	boolean isConnected();
 	
-	public String sendCommand(String xmlCommand) throws Exception;
+	String sendCommand(String xmlCommand) throws Exception;
 	
-	public void disconnect();
+	void disconnect();
 }

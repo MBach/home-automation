@@ -2,8 +2,7 @@ package org.mbach.homeautomation.edimaxsmartplug.smartplug;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/*
-
+/**
 Special Strings:
 
 SYSTEM_INFO
@@ -21,16 +20,14 @@ Device.System.Power.NextToggle
 Only write:
 
 Device.System.Password.Password
-
- */
-
-public final class RequestTemplates {
+*/
+final class RequestTemplates {
 
 	private static final String TIME_UNIT_HOUR = "HOUR";
 	private static final String TIME_UNIT_DAY = "DAY";
 	private static final String TIME_UNIT_MONTH = "MONTH";
 
-	private static String all = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String all = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='get'>\n"
 			+ "        <SYSTEM_INFO></SYSTEM_INFO>\n"
@@ -43,7 +40,7 @@ public final class RequestTemplates {
 			+ "    </CMD>\n"
 			+ "</SMARTPLUG>\n";
 
-	public static String getAll() {
+	static String getAll() {
 		return all;
 	}
 
@@ -53,18 +50,18 @@ public final class RequestTemplates {
     <CMD id="setup">FAILED</CMD>
 </SMARTPLUG>
 	 */
-	public static String switchOn = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String switchOn = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='setup'>\n"
 			+ "        <Device.System.Power.State>ON</Device.System.Power.State>\n"
 			+ "    </CMD>\n"
 			+ "</SMARTPLUG>\n";
 
-	public static String getSwitchOn() {
+	static String getSwitchOn() {
 		return switchOn;
 	}
 
-	private static String switchOff = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String switchOff = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='setup'>\n"
 			+ "        <!--<Device.System.Power.State>ON</Device.System.Power.State>-->\n"
@@ -72,7 +69,7 @@ public final class RequestTemplates {
 			+ "    </CMD>\n"
 			+ "</SMARTPLUG>\n";
 
-	public static String getSwitchOff() {
+	static String getSwitchOff() {
 		return switchOff;
 	}
 
@@ -83,14 +80,14 @@ public final class RequestTemplates {
     </CMD>
 </SMARTPLUG>
 	 */
-	private static String getStatus = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String getStatus = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='get'>\n"
 			+ "        <Device.System.Power.State></Device.System.Power.State>\n"
 			+ "    </CMD>\n"
 			+ "</SMARTPLUG>\n";
 
-	public static String getGetStatus() {
+	static String getGetStatus() {
 		return getStatus;
 	}
 	/*
@@ -112,7 +109,7 @@ public final class RequestTemplates {
 			+ "    </CMD>\n"
 			+ "</SMARTPLUG>\n";
 
-	public static String getGetHistory(SmartPlug.TimeUnit timeUnit, LocalDateTime from, LocalDateTime to) {
+	static String getGetHistory(SmartPlug.TimeUnit timeUnit, LocalDateTime from, LocalDateTime to) {
 
 		String timeUnitString = RequestTemplates.TIME_UNIT_MONTH;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
@@ -160,14 +157,14 @@ public final class RequestTemplates {
 	</CMD>
 </SMARTPLUG>
 	 */
-	private static String getPowerInfo = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String getPowerInfo = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='get'>\n"
 			+ "        <NOW_POWER></NOW_POWER>\n"
 			+ "    </CMD>\n"
 			+"</SMARTPLUG>\n";
 
-	public static String getGetPowerInfo() {
+	static String getGetPowerInfo() {
 		return getPowerInfo;
 	}
 	/*
@@ -205,14 +202,14 @@ public final class RequestTemplates {
 	</CMD>
 </SMARTPLUG>
 	 */
-	private static String getSystemInfo = "<?xml version='1.0' encoding='UTF8'?>\n"
+	private static final String getSystemInfo = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"
 			+ "    <CMD id='get'>\n"
 			+ "        <SYSTEM_INFO></SYSTEM_INFO>\n"
 			+ "    </CMD>\n"
 			+"</SMARTPLUG>\n";
 
-	public static String getGetSystemInfo() {
+	static String getGetSystemInfo() {
 		return getSystemInfo;
 	}
 
@@ -236,7 +233,7 @@ public final class RequestTemplates {
 			+ "    </CMD>"
 			+ "</SMARTPLUG>";
 
-	public static String getSetName(String name) {
+	static String getSetName(String name) {
 		return String.format(RequestTemplates.setName, name);
 	}
 
@@ -249,14 +246,14 @@ public final class RequestTemplates {
 </SMARTPLUG>
 	 */
 
-	private static String getSystemTime = "<?xml version='1.0' encoding='UTF-8'?>"
+	private static final String getSystemTime = "<?xml version='1.0' encoding='UTF-8'?>"
 			+ "<SMARTPLUG id='edimax'>"
 			+ "    <CMD id='get'>"
 			+ "        <Device.System.Time />"
 			+ "    </CMD>"
 			+ "</SMARTPLUG>";
 
-	public static String getGetSystemTime() {
+	static String getGetSystemTime() {
 		return getSystemTime;
 	}
 
@@ -287,17 +284,15 @@ Monday from 14:19 to 15:18
 	</SCHEDULE>
 </CMD>
 </SMARTPLUG>
-
-
 	 */
-	private static String getSchedule = "<?xml version='1.0' encoding='UTF-8'?>"
+	private static final String getSchedule = "<?xml version='1.0' encoding='UTF-8'?>"
 			+ "<SMARTPLUG id='edimax'>"
 			+ "    <CMD id='get'>"
 			+ "        <SCHEDULE />"
 			+ "    </CMD>"
 			+ "</SMARTPLUG>";
 
-	public static String getGetSchedule() {
+	static String getGetSchedule() {
 		return getSchedule;
 	}
 
@@ -313,7 +308,7 @@ Turn on Tuesday (Day 2)
 </SMARTPLUG>
 	 */
 
-	private static String getTurnScheduleDayOn = "<?xml version=\"1.0\" encoding=\"UTF8\"?>" +
+	private static final String getTurnScheduleDayOn = "<?xml version=\"1.0\" encoding=\"UTF8\"?>" +
 			"<SMARTPLUG id=\"edimax\">\n" + 
 			"	<CMD id=\"setup\">\n" + 
 			"		<SCHEDULE><Device.System.Power.Schedule.2 value=\"ON\"></Device.System.Power.Schedule.2></SCHEDULE>\n" + 
@@ -407,14 +402,14 @@ Response:
 </SMARTPLUG>
  */
 
-	private static String getPowerUsage = "<?xml version=\"1.0\" encoding=\"UTF8\"?>\n" + 
+	private static final String getPowerUsage = "<?xml version=\"1.0\" encoding=\"UTF8\"?>\n" +
 			"<SMARTPLUG id=\"edimax\">\n" + 
 			"	<CMD id=\"get\">\n" + 
 			"		<POWER_USAGE></POWER_USAGE>\n" + 
 			"	</CMD>\n" + 
 			"</SMARTPLUG>";
 
-	public static String getPowerUsage() {
+	static String getPowerUsage() {
 		return getPowerUsage;
 	}
 	
