@@ -22,7 +22,6 @@
             android:layout_marginTop="0dp"
             android:background="@color/primary"
             android:clickable="false"
-            android:elevation="0dp"
             android:theme="@style/ThemeOverlay.AppCompat"
             app:layout_collapseMode="pin"
             app:layout_constraintBottom_toTopOf="@+id/swipeRefreshLayout"

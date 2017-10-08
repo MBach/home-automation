@@ -28,7 +28,6 @@ import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.discovery.ScanActivity;
-import org.mbach.homeautomation.main.AsyncPopulateDb;
 import org.mbach.homeautomation.story.StoryActivity;
 import org.mbach.homeautomation.story.StoryDAO;
 
@@ -41,6 +40,7 @@ import org.mbach.homeautomation.story.StoryDAO;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     storyDAO.setEnabled(enabled);
                     if (db.updateStory(storyDAO)) {
                         int text = enabled ? R.string.story_enabled : R.string.story_disabled;
-                        Snackbar.make(findViewById(R.id.appBarLayout), text, Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(findViewById(R.id.coordinatorLayout), text, Snackbar.LENGTH_SHORT).show();
                     }
                 }
             });
