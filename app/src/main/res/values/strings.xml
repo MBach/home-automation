@@ -43,6 +43,9 @@
     <string name="snackbar_device_removed_from_story">Device removed</string>
     <string name="remove_image_story_title">Remove image</string>
     <string name="remove_image_story_description">Do you want to remove the image linked to this story?</string>
+    <string name="story_set_alarm">Set an alarm</string>
+    <string name="story_alarm_status">No alarm</string>
+    <string name="add_alarm">Add alarm</string>
 
     <!-- ImageSearchActivity -->
     <string name="image_search_title">Search for images</string>

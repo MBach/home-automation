@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -202,6 +203,7 @@ public class StoryActivity extends AppCompatActivity {
      */
     private void populateDevices() {
         final LinearLayout mainLinearLayout = findViewById(R.id.mainLinearLayout);
+        final CardView addPictureCard = findViewById(R.id.addPictureCard);
 
         for (final DeviceDAO deviceDAO : story.getDevices()) {
             final View previousDeviceView = mainLinearLayout.findViewById(deviceDAO.getId());
@@ -243,7 +245,7 @@ public class StoryActivity extends AppCompatActivity {
             TextView vendor = deviceView.findViewById(R.id.vendor);
             vendor.setText(deviceDAO.getVendor());
             deviceView.setId(deviceDAO.getId());
-            mainLinearLayout.addView(deviceView);
+            mainLinearLayout.addView(deviceView, mainLinearLayout.indexOfChild(addPictureCard));
         }
     }
 

@@ -37,6 +37,9 @@
     <string name="snackbar_device_removed_from_story">Périphérique enlevé</string>
     <string name="remove_image_story_title">Supprimer l’image</string>
     <string name="remove_image_story_description">Souhaitez-vous retirer l’image associée à ce scénario ?</string>
+    <string name="story_set_alarm">Définir une alarme</string>
+    <string name="story_alarm_status">Pas d’alarme</string>
+    <string name="add_alarm">Régler alarme</string>
 
     <!-- ImageSearchActivity -->
     <string name="image_search_title">Rechercher une image</string>

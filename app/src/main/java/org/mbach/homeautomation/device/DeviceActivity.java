@@ -18,7 +18,7 @@ import org.mbach.homeautomation.edimaxsmartplug.smartplug.SmartPlug;
 import java.net.MalformedURLException;
 
 /**
- * Constants class.
+ * DeviceActivity class.
  *
  * @author Matthieu BACHELIER
  * @since 2017-09

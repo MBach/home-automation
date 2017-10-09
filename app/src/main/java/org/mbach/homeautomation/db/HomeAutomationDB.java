@@ -67,6 +67,20 @@ public class HomeAutomationDB {
     }
 
     /**
+     * Every device has at least one action, like "power on", "power off", "toggle", etc. Unlike StoryDeviceEntry,
+     * this table is a simple 1 to N relationship.
+     */
+    static class DeviceActionEntry implements BaseColumns {
+        static final String TABLE_DEVICE_ACTION = "table_device_action";
+        static final String DEVICE_ID = "DEVICE_ID";
+        static final String NAME = "NAME";
+        static final String CREATE_TABLE_DEVICE_ACTION = "CREATE TABLE " + TABLE_DEVICE_ACTION + " ("
+                + _ID + " INTEGER PRIMARY KEY, "
+                + DEVICE_ID + " INTEGER NOT NULL, "
+                + NAME + " TEXT NOT NULL);";
+    }
+
+    /**
      *
      */
     static class StoryDeviceEntry implements BaseColumns {
