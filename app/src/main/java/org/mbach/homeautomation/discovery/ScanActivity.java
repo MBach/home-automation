@@ -28,6 +28,8 @@ import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.db.OuiDB;
+import org.mbach.homeautomation.device.DeviceActionDAO;
+import org.mbach.homeautomation.device.DeviceActionResolver;
 import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.io.BufferedReader;
@@ -53,6 +55,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private final Map<String, DeviceDAO> existingDevices = new HashMap<>();
     private final ArrayList<DeviceDAO> pendingDevices = new ArrayList<>();
     private final SparseArray<View> cards = new SparseArray<>();
+    private final DeviceActionResolver deviceActionResolver = new DeviceActionResolver();
 
     private final HomeAutomationDB db = new HomeAutomationDB(this);
     private final OuiDB ouiDB = new OuiDB(this);
@@ -215,9 +218,14 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             } else {
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
                 String vendorName = getVendor(asyncNetworkRequest.getIp());
+                // If a device has a vendor name, try to guess its actions
                 if (vendorName != null) {
                     vendor.setText(vendorName);
                     deviceDAO.setVendor(vendorName);
+                    List<DeviceActionDAO> actions = deviceActionResolver.guessByVendor(asyncNetworkRequest.getIp(), vendorName);
+                    if (!actions.isEmpty()) {
+                        deviceDAO.setActions(actions);
+                    }
                 }
             }
 

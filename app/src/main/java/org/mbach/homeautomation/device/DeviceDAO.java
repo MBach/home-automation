@@ -3,6 +3,8 @@ package org.mbach.homeautomation.device;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.List;
+
 /**
  * Story.
  *
@@ -17,6 +19,7 @@ public class DeviceDAO implements Parcelable {
     private String name;
     private String vendor;
     private String lastSeen;
+    private List<DeviceActionDAO> actions;
 
     public static final Parcelable.Creator<DeviceDAO> CREATOR = new Parcelable.Creator<DeviceDAO>() {
         public DeviceDAO createFromParcel(Parcel in) {
@@ -35,6 +38,7 @@ public class DeviceDAO implements Parcelable {
         name = in.readString();
         vendor = in.readString();
         lastSeen = in.readString();
+        // actions = in.readArrayList(DeviceActionDAO.class.getClassLoader());
     }
 
     public DeviceDAO() {
@@ -94,6 +98,14 @@ public class DeviceDAO implements Parcelable {
         this.id = id;
     }
 
+    public List<DeviceActionDAO> getActions() {
+        return actions;
+    }
+
+    public void setActions(List<DeviceActionDAO> actions) {
+        this.actions = actions;
+    }
+
     @Override
     public int describeContents() {
         return hashCode();
@@ -107,5 +119,6 @@ public class DeviceDAO implements Parcelable {
         parcel.writeString(name);
         parcel.writeString(vendor);
         parcel.writeString(lastSeen);
+        // parcel.writeArray(actions.toArray());
     }
 }
