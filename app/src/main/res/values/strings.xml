@@ -59,7 +59,7 @@
     <string name="toast_enabling_wifi">Enabling WIFI…</string>
     <string name="toast_enabling_wifi_failed">Impossible to activate WIFI</string>
     <string name="device_icon">Device icon</string>
-    <string name="device_hostname">Device hostname</string>
+    <string name="device_name">Device name</string>
     <string name="device_ip">Device IP address</string>
     <string name="ip_label">IP: </string>
     <string name="device_is_self">your smartphone</string>

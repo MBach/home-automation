@@ -40,7 +40,7 @@
                 android:id="@+id/hostname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/device_hostname" />
+                android:text="@string/device_name" />
 
             <TextView
                 android:id="@+id/ip"

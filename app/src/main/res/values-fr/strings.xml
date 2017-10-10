@@ -53,7 +53,7 @@
     <string name="toast_enabling_wifi">Activation du WIFI…</string>
     <string name="toast_enabling_wifi_failed">Impossible d’activer le WIFI</string>
     <string name="device_icon">Icône du périphérique</string>
-    <string name="device_hostname">Nom du périphérique</string>
+    <string name="device_name">Nom du périphérique</string>
     <string name="device_ip">Adresse IP du périphérique</string>
     <string name="ip_label">IP : </string>
     <string name="device_is_self">votre smartphone</string>

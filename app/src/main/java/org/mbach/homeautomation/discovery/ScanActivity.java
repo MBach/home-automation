@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -24,6 +25,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jaredrummler.android.device.DeviceName;
+
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
@@ -36,10 +39,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jcifs.netbios.NbtAddress;
 
 /**
  * ScanActivity can search for devices on your local network.
@@ -83,6 +89,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
                 View card = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
                 cards.append(deviceDAO.getId(), card);
+                TextView name = card.findViewById(R.id.name);
+                if (deviceDAO.getName() != null && !deviceDAO.getName().isEmpty()) {
+                    name.setText(deviceDAO.getName());
+                }
                 TextView ip = card.findViewById(R.id.ip);
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), deviceDAO.getIP()));
                 if (deviceDAO.getVendor() != null) {
@@ -184,15 +194,15 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     }
 
     @Override
-    public void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest) {
+    public void onCallCompleted(final AsyncNetworkRequest asyncNetworkRequest) {
         ++t;
         if (asyncNetworkRequest.isDeviceFound()) {
 
             // Check if device is already displayed (which means it hasn't been detected yet)
-            LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
-            View device;
-            DeviceDAO deviceDAO;
-            boolean deviceWasSavedBefore = existingDevices.containsKey(asyncNetworkRequest.getIp());
+            final LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
+            final View device;
+            final DeviceDAO deviceDAO;
+            final boolean deviceWasSavedBefore = existingDevices.containsKey(asyncNetworkRequest.getIp());
             if (deviceWasSavedBefore) {
                 deviceDAO = existingDevices.get(asyncNetworkRequest.getIp());
                 device = cards.get(deviceDAO.getId());
@@ -203,18 +213,40 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             // Toggle default state of the Card that has been previously instantiated
             Button deviceOffline = device.findViewById(R.id.device_offline);
             deviceOffline.setVisibility(View.GONE);
-            Button selectDevice = device.findViewById(R.id.select_device);
+            final Button selectDevice = device.findViewById(R.id.select_device);
             selectDevice.setVisibility(View.VISIBLE);
-            TextView vendor = device.findViewById(R.id.vendor);
+            final TextView name = device.findViewById(R.id.name);
+            final TextView vendor = device.findViewById(R.id.vendor);
 
-            TextView ip = device.findViewById(R.id.ip);
+            final TextView ip = device.findViewById(R.id.ip);
+            deviceDAO.setIP(asyncNetworkRequest.getIp());
+            deviceDAO.setSSID(wifiManager.getConnectionInfo().getSSID());
+
             if (asyncNetworkRequest.isSelfFound()) {
-                String label = String.format("%s%s (%s)", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp(), getResources().getString(R.string.device_is_self));
-                ip.setText(label);
-                ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
+                final ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
                 deviceIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_phone_android_white_48dp));
-                vendor.setVisibility(View.GONE);
-                selectDevice.setEnabled(false);
+                DeviceName.with(this).request(new DeviceName.Callback() {
+                    @Override public void onFinished(DeviceName.DeviceInfo info, Exception error) {
+                        deviceDAO.setName(info.getName());
+                        name.setText(info.getName());
+                        String label = String.format("%s%s (%s)", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp(), getResources().getString(R.string.device_is_self));
+                        ip.setText(label);
+                        vendor.setText(info.manufacturer);
+                        deviceDAO.setVendor(info.manufacturer);
+                        selectDevice.setEnabled(false);
+
+                        if (deviceWasSavedBefore) {
+                            db.updateDevice(deviceDAO);
+                            device.setId(deviceDAO.getId());
+                        } else {
+                            long id =  db.createDevice(deviceDAO);
+                            deviceDAO.setId((int) id);
+                            device.setId((int) id);
+                            detectedDevicesLayout.addView(device);
+                            existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
+                        }
+                    }
+                });
             } else {
                 ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
                 String vendorName = getVendor(asyncNetworkRequest.getIp());
@@ -227,13 +259,36 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                         deviceDAO.setActions(actions);
                     }
                 }
+
+                try {
+                    StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                    StrictMode.setThreadPolicy(threadPolicy );
+                    NbtAddress[] addressList = NbtAddress.getAllByAddress(asyncNetworkRequest.getIp());
+                    NbtAddress address = addressList[0];
+                    if (address != null) {
+                        Log.d(TAG, "HOSTNAME = " + address.getHostName());
+                        deviceDAO.setName(address.getHostName());
+                    }
+
+                    if (deviceWasSavedBefore) {
+                        db.updateDevice(deviceDAO);
+                        device.setId(deviceDAO.getId());
+                    } else {
+                        long id =  db.createDevice(deviceDAO);
+                        deviceDAO.setId((int) id);
+                        device.setId((int) id);
+                        detectedDevicesLayout.addView(device);
+                        existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
+                    }
+                } catch (UnknownHostException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+
+
             }
 
-            deviceDAO.setIP(asyncNetworkRequest.getIp());
-            deviceDAO.setSSID(wifiManager.getConnectionInfo().getSSID());
-
             // Save the device to local database
-            if (deviceWasSavedBefore) {
+            /*if (deviceWasSavedBefore) {
                 db.updateDevice(deviceDAO);
                 device.setId(deviceDAO.getId());
             } else {
@@ -242,7 +297,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 device.setId((int) id);
                 detectedDevicesLayout.addView(device);
                 existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
-            }
+            }*/
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
