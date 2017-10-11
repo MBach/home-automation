@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -51,6 +52,7 @@ public class StoryActivity extends AppCompatActivity {
     private final HomeAutomationDB db = new HomeAutomationDB(this);
     private StoryDAO story;
     private boolean hasNewCover;
+    private boolean isDefaultCover = true;
     private DeviceDAO lastRemovedDevice;
 
     @Override
@@ -76,7 +78,8 @@ public class StoryActivity extends AppCompatActivity {
                 storyEditText.setText(story.getTitle());
                 ImageView coverStory = findViewById(R.id.coverStory);
                 Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), story);
-                if (bitmap != null) {
+                isDefaultCover = bitmap == null;
+                if (!isDefaultCover) {
                     coverStory.setImageBitmap(bitmap);
                     Button addPicture = findViewById(R.id.add_picture);
                     addPicture.setText(R.string.edit_picture);
@@ -162,6 +165,7 @@ public class StoryActivity extends AppCompatActivity {
             ImageView coverStory = findViewById(R.id.coverStory);
             Picasso.with(getBaseContext()).load(data.getStringExtra(Constants.EXTRA_FILE)).into(coverStory);
             hasNewCover = true;
+            isDefaultCover = false;
         } else if (requestCode == Constants.RQ_STORY_TO_SCAN_LAN && resultCode == RESULT_OK && data != null) {
             ArrayList<DeviceDAO> devices = data.getParcelableArrayListExtra(Constants.EXTRA_DEVICES);
             if (story == null) {
@@ -240,6 +244,15 @@ public class StoryActivity extends AppCompatActivity {
                     return true;
                 }
             });
+
+            // Hide the text if the device has no NetBios name (should be improved by the way)
+            TextView name = deviceView.findViewById(R.id.name);
+            if (deviceDAO.getName() == null) {
+                name.setVisibility(View.GONE);
+            } else {
+                name.setText(deviceDAO.getName());
+            }
+
             TextView ip = deviceView.findViewById(R.id.ip);
             ip.setText(deviceDAO.getIP());
             TextView vendor = deviceView.findViewById(R.id.vendor);
@@ -306,6 +319,10 @@ public class StoryActivity extends AppCompatActivity {
      * @param view the view
      */
     public void askRemoveImage(View view) {
+        Log.d(TAG, view.toString());
+        if (isDefaultCover) {
+            return;
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
             .setTitle(R.string.remove_image_story_title)
             .setMessage(R.string.remove_image_story_description)
@@ -316,6 +333,7 @@ public class StoryActivity extends AppCompatActivity {
                     coverStory.setImageDrawable(drawable);
                     story.setCoverPath(null);
                     hasNewCover = false;
+                    isDefaultCover = true;
                 }
             })
             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

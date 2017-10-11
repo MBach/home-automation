@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -39,13 +38,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import jcifs.netbios.NbtAddress;
 
 /**
  * ScanActivity can search for devices on your local network.
@@ -221,6 +217,12 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             final TextView ip = device.findViewById(R.id.ip);
             deviceDAO.setIP(asyncNetworkRequest.getIp());
             deviceDAO.setSSID(wifiManager.getConnectionInfo().getSSID());
+            if (asyncNetworkRequest.getDeviceName() == null) {
+                name.setText(getResources().getString(R.string.scan_no_name_detected));
+            } else {
+                deviceDAO.setName(asyncNetworkRequest.getDeviceName());
+                name.setText(asyncNetworkRequest.getDeviceName());
+            }
 
             if (asyncNetworkRequest.isSelfFound()) {
                 final ImageView deviceIcon = device.findViewById(R.id.deviceIcon);
@@ -228,27 +230,16 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 DeviceName.with(this).request(new DeviceName.Callback() {
                     @Override public void onFinished(DeviceName.DeviceInfo info, Exception error) {
                         deviceDAO.setName(info.getName());
-                        name.setText(info.getName());
-                        String label = String.format("%s%s (%s)", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp(), getResources().getString(R.string.device_is_self));
+                        name.setText(String.format("%s (%s)", info.getName(), getResources().getString(R.string.device_is_self)));
+                        String label = String.format("%s %s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp());
                         ip.setText(label);
                         vendor.setText(info.manufacturer);
                         deviceDAO.setVendor(info.manufacturer);
                         selectDevice.setEnabled(false);
-
-                        if (deviceWasSavedBefore) {
-                            db.updateDevice(deviceDAO);
-                            device.setId(deviceDAO.getId());
-                        } else {
-                            long id =  db.createDevice(deviceDAO);
-                            deviceDAO.setId((int) id);
-                            device.setId((int) id);
-                            detectedDevicesLayout.addView(device);
-                            existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
-                        }
                     }
                 });
             } else {
-                ip.setText(String.format("%s%s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
+                ip.setText(String.format("%s %s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
                 String vendorName = getVendor(asyncNetworkRequest.getIp());
                 // If a device has a vendor name, try to guess its actions
                 if (vendorName != null) {
@@ -259,36 +250,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                         deviceDAO.setActions(actions);
                     }
                 }
-
-                try {
-                    StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-                    StrictMode.setThreadPolicy(threadPolicy );
-                    NbtAddress[] addressList = NbtAddress.getAllByAddress(asyncNetworkRequest.getIp());
-                    NbtAddress address = addressList[0];
-                    if (address != null) {
-                        Log.d(TAG, "HOSTNAME = " + address.getHostName());
-                        deviceDAO.setName(address.getHostName());
-                    }
-
-                    if (deviceWasSavedBefore) {
-                        db.updateDevice(deviceDAO);
-                        device.setId(deviceDAO.getId());
-                    } else {
-                        long id =  db.createDevice(deviceDAO);
-                        deviceDAO.setId((int) id);
-                        device.setId((int) id);
-                        detectedDevicesLayout.addView(device);
-                        existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
-                    }
-                } catch (UnknownHostException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-
-
             }
 
             // Save the device to local database
-            /*if (deviceWasSavedBefore) {
+            if (deviceWasSavedBefore) {
                 db.updateDevice(deviceDAO);
                 device.setId(deviceDAO.getId());
             } else {
@@ -297,7 +262,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 device.setId((int) id);
                 detectedDevicesLayout.addView(device);
                 existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
-            }*/
+            }
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);

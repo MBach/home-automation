@@ -71,7 +71,8 @@
                     android:id="@+id/headerDevices"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/device_list" />
+                    android:text="@string/device_list"
+                    android:textSize="18sp" />
 
                 <Space
                     android:layout_width="0dp"
@@ -127,7 +128,7 @@
                     <TextView
                         android:id="@+id/headerTrigger2"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
                         android:layout_weight="1"
                         android:paddingEnd="16dp"
                         android:paddingLeft="16dp"
@@ -146,7 +147,8 @@
                         android:layout_margin="0dp"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:orientation="horizontal"
-                        android:padding="0dp">
+                        android:paddingEnd="8dp"
+                        android:paddingStart="8dp">
 
                         <Button
                             android:id="@+id/add_picture"
@@ -157,8 +159,7 @@
                             android:autoLink="web"
                             android:linksClickable="true"
                             android:onClick="searchImage"
-                            android:paddingEnd="8dp"
-                            android:paddingStart="8dp"
+                            android:padding="@dimen/activity_horizontal_margin"
                             android:text="@string/add_picture"
                             android:textSize="12sp"
                             android:typeface="normal" />
@@ -227,7 +228,9 @@
                         android:layout_margin="0dp"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:orientation="horizontal"
-                        android:padding="0dp">
+                        android:padding="0dp"
+                        android:paddingEnd="@dimen/activity_horizontal_margin"
+                        android:paddingStart="@dimen/activity_horizontal_margin">
 
                         <Button
                             android:id="@+id/add_alarm"
@@ -237,8 +240,8 @@
                             android:layout_margin="0dp"
                             android:autoLink="web"
                             android:linksClickable="true"
-                            android:paddingEnd="8dp"
-                            android:paddingStart="8dp"
+                            android:paddingEnd="@dimen/activity_horizontal_margin"
+                            android:paddingStart="@dimen/activity_horizontal_margin"
                             android:text="@string/add_alarm"
                             android:textSize="12sp"
                             android:typeface="normal" />

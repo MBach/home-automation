@@ -59,7 +59,7 @@
     <string name="toast_enabling_wifi">Enabling WIFI…</string>
     <string name="toast_enabling_wifi_failed">Impossible to activate WIFI</string>
     <string name="device_icon">Device icon</string>
-    <string name="device_name">Device name</string>
+    <string name="device_name">Searching for a name…</string>
     <string name="device_ip">Device IP address</string>
     <string name="ip_label">IP: </string>
     <string name="device_is_self">your smartphone</string>
@@ -67,6 +67,7 @@
     <string name="device_offline">Device offline</string>
     <string name="select_device_unselected">Add to list</string>
     <string name="select_device_selected">Added</string>
+    <string name="scan_no_name_detected">(no name detected)</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions to perform when story is enabled</string>

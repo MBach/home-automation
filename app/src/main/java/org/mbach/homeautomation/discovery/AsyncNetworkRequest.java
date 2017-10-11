@@ -6,6 +6,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import jcifs.netbios.NbtAddress;
+
 /**
  * AsyncNetworkRequest.
  *
@@ -20,9 +22,12 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
 
     private boolean deviceFound;
     private boolean selfFound;
+    private String deviceName;
 
     private final String selfIp;
     private String ip;
+
+
 
     AsyncNetworkRequest(OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener, String selfIp) {
         this.listener = listener;
@@ -41,6 +46,14 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
                 ip = inetAddress.getHostAddress();
                 deviceFound = true;
                 selfFound = selfIp.equals(ip);
+
+                if (!selfFound) {
+                    NbtAddress[] addressList = NbtAddress.getAllByAddress(address);
+                    NbtAddress nbtAddress = addressList[0];
+                    if (address != null) {
+                        deviceName = nbtAddress.getHostName();
+                    }
+                }
             }
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
@@ -64,5 +77,9 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
 
     boolean isSelfFound() {
         return selfFound;
+    }
+
+    String getDeviceName() {
+        return deviceName;
     }
 }

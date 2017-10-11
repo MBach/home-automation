@@ -53,7 +53,7 @@
     <string name="toast_enabling_wifi">Activation du WIFI…</string>
     <string name="toast_enabling_wifi_failed">Impossible d’activer le WIFI</string>
     <string name="device_icon">Icône du périphérique</string>
-    <string name="device_name">Nom du périphérique</string>
+    <string name="device_name">Recherche du nom…</string>
     <string name="device_ip">Adresse IP du périphérique</string>
     <string name="ip_label">IP : </string>
     <string name="device_is_self">votre smartphone</string>
@@ -61,6 +61,7 @@
     <string name="device_offline">Périphériqué déconnecté</string>
     <string name="select_device_unselected">Ajouter à la liste</string>
     <string name="select_device_selected">Ajouté</string>
+    <string name="scan_no_name_detected">(aucun nom détecté)</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions à effectuer lorsque le scénario est activé</string>
