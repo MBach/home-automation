@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -119,7 +118,6 @@ public class StoryActivity extends AppCompatActivity {
                 }
 
                 long storyId = -1;
-                Log.d(TAG, "storyId ? " + story.getId());
                 if (story.getId() == -1) {
                     storyId = db.createStory(story);
                 } else if (db.updateStory(story)) {
@@ -215,32 +213,18 @@ public class StoryActivity extends AppCompatActivity {
                 mainLinearLayout.removeView(previousDeviceView);
             }
             final View deviceView = getLayoutInflater().inflate(R.layout.story_activity_card_device, mainLinearLayout, false);
-            deviceView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(getApplicationContext(), DeviceActivity.class);
-                    intent.putExtra(Constants.EXTRA_DEVICE_ID, deviceDAO.getId());
-                    intent.putExtra(Constants.EXTRA_DEVICE_NAME, deviceDAO.getIP());
-                    startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
-                }
-            });
+
+            // Pass args to buttons in order to perfom some actions on the device
+            Button deleteDevice = deviceView.findViewById(R.id.delete_device);
+            deleteDevice.setTag(R.id.cardDevice, deviceDAO);
+
+            Button configureDevice = deviceView.findViewById(R.id.configure_device);
+            configureDevice.setTag(R.id.cardDevice, deviceDAO);
 
             deviceView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
-                            .setTitle(R.string.remove_device_from_story_title)
-                            .setMessage(R.string.remove_device_from_story_description)
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    removeDeviceFromStory(deviceDAO);
-                                }
-                            })
-                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                }
-                            });
-                    builder.create().show();
+                    showRemoveDeviceDialog(deviceDAO);
                     return true;
                 }
             });
@@ -260,6 +244,22 @@ public class StoryActivity extends AppCompatActivity {
             deviceView.setId(deviceDAO.getId());
             mainLinearLayout.addView(deviceView, mainLinearLayout.indexOfChild(addPictureCard));
         }
+    }
+
+    private void showRemoveDeviceDialog(final DeviceDAO deviceDAO) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(StoryActivity.this)
+                .setTitle(R.string.remove_device_from_story_title)
+                .setMessage(R.string.remove_device_from_story_description)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        removeDeviceFromStory(deviceDAO);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        builder.create().show();
     }
 
     private void removeDeviceFromStory(DeviceDAO deviceToFind) {
@@ -341,5 +341,28 @@ public class StoryActivity extends AppCompatActivity {
                 }
             });
         builder.create().show();
+    }
+
+    /**
+     * Ask user if he wants to remove this device from story.
+     *
+     * @param button the button which was clicked by one
+     */
+    public void deleteDevice(View button) {
+        showRemoveDeviceDialog((DeviceDAO) button.getTag(R.id.cardDevice));
+    }
+
+    /**
+     * Change activity to configure the device.
+     *
+     * @param button the button which was clicked by one
+     */
+    public void configureDevice(View button) {
+        DeviceDAO deviceDAO = (DeviceDAO) button.getTag(R.id.cardDevice);
+        Intent intent = new Intent(getApplicationContext(), DeviceActivity.class);
+        intent.putExtra(Constants.EXTRA_DEVICE_ID, deviceDAO.getId());
+        intent.putExtra(Constants.EXTRA_DEVICE_NAME, deviceDAO.getName());
+        intent.putExtra(Constants.EXTRA_DEVICE_IP, deviceDAO.getIP());
+        startActivityForResult(intent, Constants.RQ_STORY_TO_DEVICE);
     }
 }

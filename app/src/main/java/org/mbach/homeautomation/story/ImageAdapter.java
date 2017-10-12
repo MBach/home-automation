@@ -18,15 +18,13 @@ import java.util.List;
  */
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolderImage> {
 
-    private static final String TAG = "ImageAdapter";
-
     private List<Model> items;
 
     private final ImageSearchActivity.OnItemClickListener listener;
 
     private ViewHolderImage viewHolderImage;
 
-    public ImageAdapter(ImageSearchActivity.OnItemClickListener listener) {
+    ImageAdapter(ImageSearchActivity.OnItemClickListener listener) {
         this.listener = listener;
     }
 

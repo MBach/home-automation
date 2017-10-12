@@ -1,21 +1,13 @@
 package org.mbach.homeautomation.device;
 
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
-import org.mbach.homeautomation.edimaxsmartplug.entities.PlugCredentials;
-import org.mbach.homeautomation.edimaxsmartplug.smartplug.LocalConnection;
-import org.mbach.homeautomation.edimaxsmartplug.smartplug.PlugConnection;
-import org.mbach.homeautomation.edimaxsmartplug.smartplug.SmartPlug;
-
-import java.net.MalformedURLException;
 
 /**
  * DeviceActivity class.
@@ -25,7 +17,7 @@ import java.net.MalformedURLException;
  */
 public class DeviceActivity extends AppCompatActivity {
 
-    private static final String TAG = "DeviceActivity";
+    // private static final String TAG = "DeviceActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +29,16 @@ public class DeviceActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
+        // long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
         String deviceName = getIntent().getStringExtra(Constants.EXTRA_DEVICE_NAME);
-        setTitle(deviceName);
+        if (deviceName == null) {
+            setTitle(getIntent().getStringExtra(Constants.EXTRA_DEVICE_IP));
+        } else {
+            setTitle(deviceName);
+        }
 
         /// XXX
-        StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        /*StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(threadPolicy );
         try {
             PlugCredentials plugCredentials = new PlugCredentials("admin", "0000");
@@ -54,7 +50,7 @@ public class DeviceActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
             Log.d(TAG, e.toString());
-        }
+        }*/
     }
 
     @Override

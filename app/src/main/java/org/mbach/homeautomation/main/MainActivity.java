@@ -40,7 +40,6 @@ import org.mbach.homeautomation.story.StoryDAO;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawerLayout;
-    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         drawerLayout.closeDrawers();
-        //if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-        //}
         switch (menuItem.getItemId()) {
             case R.id.category_add_scenario:
                 startActivityForResult(new Intent(getApplicationContext(), StoryActivity.class), Constants.RQ_MAIN_TO_STORY);
@@ -86,10 +83,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_account:
-                //startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                // startActivity(new Intent(getApplicationContext(), LoginActivity.class));
                 return true;
             case R.id.action_settings:
-                //startActivityForResult(new Intent(getApplicationContext(), SettingsActivity.class), FROM_SETTINGS_ACTIVITY);
+                // startActivityForResult(new Intent(getApplicationContext(), SettingsActivity.class), FROM_SETTINGS_ACTIVITY);
                 return true;
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
@@ -130,7 +127,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         header.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 drawerLayout.closeDrawers();
             }
         });
@@ -184,10 +180,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    /**
+     *
+     */
     private void initOuiDb() {
         AsyncPopulateDb asyncNetworkRequest = new AsyncPopulateDb(this);
         asyncNetworkRequest.execute();
     }
-
-
 }

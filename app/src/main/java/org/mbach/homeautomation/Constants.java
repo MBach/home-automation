@@ -16,6 +16,7 @@ public final class Constants {
     public static final String EXTRA_STORY_ID = "STORY_ID";
     public static final String EXTRA_DEVICE_ID = "DEVICE_ID";
     public static final String EXTRA_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRA_DEVICE_IP = "DEVICE_IP";
     public static final String EXTRA_DEVICES = "DEVICES";
     public static final String EXTRA_FILE = "FILE";
 }

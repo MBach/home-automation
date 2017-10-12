@@ -62,6 +62,7 @@
     <string name="select_device_unselected">Ajouter à la liste</string>
     <string name="select_device_selected">Ajouté</string>
     <string name="scan_no_name_detected">(aucun nom détecté)</string>
+    <string name="default_device_name">Nom par défaut</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions à effectuer lorsque le scénario est activé</string>

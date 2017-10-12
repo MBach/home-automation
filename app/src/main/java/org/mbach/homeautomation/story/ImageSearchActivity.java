@@ -93,12 +93,6 @@ public class ImageSearchActivity extends AppCompatActivity {
                         .build().toString();
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, uri, onResponse, onError);
                 requestQueue.add(stringRequest);
-                /// DEBUG
-                /*List<Model> modelList = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    modelList.add(new Model("http://lorempixel.com/500/500/animals/" + i, i));
-                }
-                imageAdapter.insertItems(modelList);*/
                 return false;
             }
 
@@ -132,6 +126,12 @@ public class ImageSearchActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult");
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     /**
      *
      */
@@ -153,12 +153,6 @@ public class ImageSearchActivity extends AppCompatActivity {
             }
         }
     };
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
     /**
      *

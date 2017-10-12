@@ -68,6 +68,7 @@
     <string name="select_device_unselected">Add to list</string>
     <string name="select_device_selected">Added</string>
     <string name="scan_no_name_detected">(no name detected)</string>
+    <string name="default_device_name">Default name</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions to perform when story is enabled</string>

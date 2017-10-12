@@ -1,6 +1,7 @@
 <resources>
 
     <color name="primary">#424242</color>
+    <color name="primary_separator">#616161</color>
     <color name="primary_dark">#212121</color>
     <color name="primary_light">#ffffff</color>
     <color name="primary_light_dark">#e0e0e0</color>
