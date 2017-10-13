@@ -3,8 +3,11 @@ package org.mbach.homeautomation.discovery;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.stealthcopter.networktools.PortScan;
+
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 
 import jcifs.netbios.NbtAddress;
 
@@ -26,12 +29,18 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
 
     private final String selfIp;
     private String ip;
-
-
+    //private static ArrayList<Integer> standardPorts = new ArrayList<>();
+    private static final String standardPorts = "80,3000,8080,10000";
 
     AsyncNetworkRequest(OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> listener, String selfIp) {
         this.listener = listener;
         this.selfIp = selfIp;
+        /*if (standardPorts.isEmpty()) {
+            standardPorts.add(80);
+            standardPorts.add(3000);
+            standardPorts.add(8080);
+            standardPorts.add(10000);
+        }*/
     }
 
     @Override
@@ -48,6 +57,20 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
                 selfFound = selfIp.equals(ip);
 
                 if (!selfFound) {
+                    PortScan.onAddress(ip).setTimeOutMillis(1000).setPorts(standardPorts).doScan(new PortScan.PortListener() {
+                        @Override
+                        public void onResult(int portNo, boolean open) {
+                            if (open) {
+                                Log.d(TAG, "port " + portNo + " is opened for " + ip);
+                            }
+                        }
+
+                        @Override
+                        public void onFinished(ArrayList<Integer> openPorts) {
+                            Log.d(TAG, "ports opened = " + openPorts + " for " + ip);
+                        }
+                    });
+
                     NbtAddress[] addressList = NbtAddress.getAllByAddress(address);
                     NbtAddress nbtAddress = addressList[0];
                     if (address != null) {

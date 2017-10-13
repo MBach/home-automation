@@ -33,4 +33,5 @@ dependencies {
     implementation 'com.android.support:support-vector-drawable:26.1.0'
     implementation 'com.jaredrummler:android-device-names:1.1.5'
     implementation 'org.codelibs:jcifs:1.3.18.3'
+    implementation 'com.github.stealthcopter:AndroidNetworkTools:0.2.1'
 }
