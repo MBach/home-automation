@@ -25,19 +25,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jaredrummler.android.device.DeviceName;
+import com.stealthcopter.networktools.PortScan;
 
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.db.OuiDB;
-import org.mbach.homeautomation.device.DeviceActionDAO;
-import org.mbach.homeautomation.device.DeviceActionResolver;
+
 import org.mbach.homeautomation.device.DeviceDAO;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,16 +52,16 @@ import java.util.Map;
  * @author Matthieu BACHELIER
  * @since 2017-08
  */
-public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> {
+public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTaskCompleted<AsyncNetworkRequest>  {
 
     private static final String TAG = "ScanActivity";
-    private static int t = 0;
+    private static final String standardPorts = "80,3000,8080,10000";
 
+    private static int t = 0;
     private final Map<String, DeviceDAO> existingDevices = new HashMap<>();
     private final ArrayList<DeviceDAO> pendingDevices = new ArrayList<>();
-    private final SparseArray<View> cards = new SparseArray<>();
-    private final DeviceActionResolver deviceActionResolver = new DeviceActionResolver();
 
+    private final SparseArray<View> cards = new SparseArray<>();
     private final HomeAutomationDB db = new HomeAutomationDB(this);
     private final OuiDB ouiDB = new OuiDB(this);
     private WifiManager wifiManager;
@@ -189,8 +192,12 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
+    /**
+     *
+     * @param asyncNetworkRequest the original request
+     */
     @Override
-    public void onCallCompleted(final AsyncNetworkRequest asyncNetworkRequest) {
+    public void onNetworkScanCompleted(final AsyncNetworkRequest asyncNetworkRequest) {
         ++t;
         if (asyncNetworkRequest.isDeviceFound()) {
 
@@ -206,6 +213,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 deviceDAO = new DeviceDAO();
                 device = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
             }
+
             // Toggle default state of the Card that has been previously instantiated
             Button deviceOffline = device.findViewById(R.id.device_offline);
             deviceOffline.setVisibility(View.GONE);
@@ -241,14 +249,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             } else {
                 ip.setText(String.format("%s %s", getResources().getString(R.string.ip_label), asyncNetworkRequest.getIp()));
                 String vendorName = getVendor(asyncNetworkRequest.getIp());
-                // If a device has a vendor name, try to guess its actions
                 if (vendorName != null) {
                     vendor.setText(vendorName);
                     deviceDAO.setVendor(vendorName);
-                    List<DeviceActionDAO> actions = deviceActionResolver.guessByVendor(asyncNetworkRequest.getIp(), vendorName);
-                    if (!actions.isEmpty()) {
-                        deviceDAO.setActions(actions);
-                    }
                 }
             }
 
@@ -263,6 +266,13 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 detectedDevicesLayout.addView(device);
                 existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
             }
+
+            // If a device isn't user's phone, try to guess open ports and reachable actions
+            // A limited list of TCP/UDP port are scanned, based on my own devices (no need to scan all 65535 ports)
+            // Open ports are usually 80, 3000, 8080, 10000 (web, NodeJS server on Raspberry PI, some Home Automation "standard" ports like Zigbee, etc)
+            if (!asyncNetworkRequest.isSelfFound()) {
+                scanPort(asyncNetworkRequest.getIp());
+            }
         }
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
@@ -272,6 +282,86 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
+    /**
+     * Scan a device to find open ports.
+     *
+     * @param ip device to scan
+     */
+    private void scanPort(final String ip) {
+        try {
+            PortScan.onAddress(ip).setTimeOutMillis(1000).setPorts(standardPorts).doScan(new PortScan.PortListener() {
+
+                private boolean isProtected;
+
+                @Override
+                public void onResult(int portNo, boolean open) {
+                    if (open) {
+                        Log.d(TAG, "port " + portNo + " is opened for " + ip);
+                        try {
+                            HttpURLConnection urlConnection = (HttpURLConnection) new URL(String.format("http://%s:%s/", ip, portNo)).openConnection();
+                            urlConnection.connect();
+                            int statusCode = urlConnection.getResponseCode();
+                            /// TODO guess actions
+                            // DeviceActionDAO deviceActionDAO = new DeviceActionDAO();
+                            if (statusCode == 200) {
+                                Log.d(TAG, "we are connected to " + ip);
+                            } else if (statusCode == 401){
+                                // Device is protected
+                                Log.d(TAG, "Device is protected " + statusCode);
+                                isProtected = true;
+                            } else {
+                                Log.d(TAG, "Error with statusCode: " + statusCode);
+                            }
+                        } catch (IOException e) {
+                            Log.e(TAG, "IOException: " + e.getMessage());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFinished(ArrayList<Integer> openPorts) {
+                    Log.d(TAG, "ports opened = " + openPorts + " for " + ip);
+                    onPortScanCompleted(ip, isProtected);
+                }
+            });
+        } catch (UnknownHostException e) {
+            Log.e(TAG, "UnknownHostException: " + e.getMessage());
+        }
+    }
+
+    /**
+     *
+     * @param ip the ip
+     * @param isProtected if current scanned device is protected
+     */
+    public void onPortScanCompleted(String ip, final boolean isProtected) {
+
+        // It is certain that device has been saved before
+        final DeviceDAO deviceDAO = existingDevices.get(ip);
+        final View device = cards.get(deviceDAO.getId());
+
+        /// XXX: wow, seriously?
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isProtected) {
+                    ImageView lockIcon = device.findViewById(R.id.lockIcon);
+                    lockIcon.setVisibility(View.VISIBLE);
+                } else {
+                    Log.d(TAG, "device is not protected, checking for protocol");
+                }
+            }
+        });
+
+        deviceDAO.setProtected(isProtected);
+        db.updateDevice(deviceDAO);
+    }
+
+    /**
+     *
+     * @param ip device to scan
+     * @return the name of the vendor, if exists
+     */
     @Nullable
     private String getVendor(String ip) {
         try {
@@ -290,6 +380,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         return null;
     }
 
+    /**
+     *
+     * @param view the button which was clicked
+     */
     public void selectDevice(View view) {
         Button button = (Button) view;
         CardView cardView = (CardView) view.getParent().getParent().getParent();
@@ -319,6 +413,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         button.setActivated(!isActivated);
     }
 
+    /**
+     *
+     */
     private void updateFab() {
         FloatingActionButton fab = findViewById(R.id.addDeviceFab);
         if (pendingDevices.isEmpty()) {

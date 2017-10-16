@@ -7,5 +7,5 @@ package org.mbach.homeautomation.discovery;
  * @since 2017-08
  */
 interface OnAsyncNetworkTaskCompleted<AsyncNetworkRequest> {
-    void onCallCompleted(AsyncNetworkRequest asyncNetworkRequest);
+    void onNetworkScanCompleted(AsyncNetworkRequest asyncNetworkRequest);
 }

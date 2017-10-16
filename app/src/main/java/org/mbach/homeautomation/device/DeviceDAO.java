@@ -19,6 +19,8 @@ public class DeviceDAO implements Parcelable {
     private String name;
     private String vendor;
     private String lastSeen;
+    private boolean isProtected;
+
     private List<DeviceActionDAO> actions;
 
     public static final Parcelable.Creator<DeviceDAO> CREATOR = new Parcelable.Creator<DeviceDAO>() {
@@ -38,6 +40,7 @@ public class DeviceDAO implements Parcelable {
         name = in.readString();
         vendor = in.readString();
         lastSeen = in.readString();
+        isProtected = in.readInt() == 1;
         // actions = in.readArrayList(DeviceActionDAO.class.getClassLoader());
     }
 
@@ -106,6 +109,14 @@ public class DeviceDAO implements Parcelable {
         this.actions = actions;
     }
 
+    public void setProtected(boolean isProtected) {
+        this.isProtected = isProtected;
+    }
+
+    public boolean isProtected() {
+        return isProtected;
+    }
+
     @Override
     public int describeContents() {
         return hashCode();
@@ -119,6 +130,7 @@ public class DeviceDAO implements Parcelable {
         parcel.writeString(name);
         parcel.writeString(vendor);
         parcel.writeString(lastSeen);
+        parcel.writeInt(isProtected ? 1 : 0);
         // parcel.writeArray(actions.toArray());
     }
 }
