@@ -135,7 +135,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private String getLocalSubnet(){
         currentIp = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
         int lastDot = currentIp.lastIndexOf(".");
-        Log.d(TAG, "IP:" + currentIp);
         return currentIp.substring(0, lastDot + 1);
     }
 
@@ -294,27 +293,28 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 private boolean isProtected;
 
                 @Override
-                public void onResult(int portNo, boolean open) {
-                    if (open) {
-                        Log.d(TAG, "port " + portNo + " is opened for " + ip);
-                        try {
-                            HttpURLConnection urlConnection = (HttpURLConnection) new URL(String.format("http://%s:%s/", ip, portNo)).openConnection();
-                            urlConnection.connect();
-                            int statusCode = urlConnection.getResponseCode();
-                            /// TODO guess actions
-                            // DeviceActionDAO deviceActionDAO = new DeviceActionDAO();
-                            if (statusCode == 200) {
-                                Log.d(TAG, "we are connected to " + ip);
-                            } else if (statusCode == 401){
-                                // Device is protected
-                                Log.d(TAG, "Device is protected " + statusCode);
-                                isProtected = true;
-                            } else {
-                                Log.d(TAG, "Error with statusCode: " + statusCode);
-                            }
-                        } catch (IOException e) {
-                            Log.e(TAG, "IOException: " + e.getMessage());
+                public void onResult(int port, boolean open) {
+                    if (!open) {
+                        return;
+                    }
+                    Log.d(TAG, "port " + port + " is opened for " + ip);
+                    try {
+                        HttpURLConnection urlConnection = (HttpURLConnection) new URL(String.format("http://%s:%s/", ip, port)).openConnection();
+                        urlConnection.connect();
+                        int statusCode = urlConnection.getResponseCode();
+                        /// TODO guess actions
+                        // DeviceActionDAO deviceActionDAO = new DeviceActionDAO();
+                        if (statusCode == 200) {
+                            Log.d(TAG, "we are connected to " + ip);
+                        } else if (statusCode == 401){
+                            // Device is protected
+                            Log.d(TAG, "Device is protected " + statusCode);
+                            isProtected = true;
+                        } else {
+                            Log.d(TAG, "Error with statusCode: " + statusCode);
                         }
+                    } catch (IOException e) {
+                        Log.e(TAG, "IOException: " + e.getMessage());
                     }
                 }
 
@@ -335,7 +335,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      * @param isProtected if current scanned device is protected
      */
     public void onPortScanCompleted(String ip, final boolean isProtected) {
-
         // It is certain that device has been saved before
         final DeviceDAO deviceDAO = existingDevices.get(ip);
         final View device = cards.get(deviceDAO.getId());

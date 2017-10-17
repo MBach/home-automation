@@ -1,5 +1,7 @@
 package org.mbach.homeautomation.edimaxsmartplug.smartplug;
 
+import android.util.Log;
+
 import org.mbach.homeautomation.edimaxsmartplug.entities.PowerInformation;
 import org.mbach.homeautomation.edimaxsmartplug.entities.ScheduleDay;
 import org.mbach.homeautomation.edimaxsmartplug.entities.SystemInformation;
@@ -13,6 +15,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 public class SmartPlug {
+
+	private static final String TAG = "SmartPlug";
 
 	private PlugConnection connection;
 
@@ -37,7 +41,7 @@ public class SmartPlug {
 	private void getAll() throws Exception {
 		String xml = RequestTemplates.getAll();
 		String response = this.connection.sendCommand(xml);
-		System.out.println(response);		
+		Log.d(TAG, "getAll " + response);
 	}
 
 	// TODO Parse time response.
@@ -49,7 +53,6 @@ public class SmartPlug {
 	public ScheduleDay[] getSchedule() throws Exception {
 		String xml = RequestTemplates.getGetSchedule();
 		String response = this.connection.sendCommand(xml);
-
 		return Schedule.createFromDocument(EdimaxUtil.getDocumentFromString(response));
 	}
 
@@ -63,7 +66,7 @@ public class SmartPlug {
 
 		String statusString = xpath.evaluate("/SMARTPLUG/CMD/Device.System.Power.State", source);
 
-		if(statusString.equals("ON")) {
+		if (statusString.equals("ON")) {
 			return SmartPlug.State.ON;
 		}
 		return SmartPlug.State.OFF;
