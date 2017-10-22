@@ -12,7 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MenuItem;
@@ -38,7 +37,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -133,9 +134,17 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      */
     @NonNull
     private String getLocalSubnet(){
-        currentIp = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
-        int lastDot = currentIp.lastIndexOf(".");
-        return currentIp.substring(0, lastDot + 1);
+        int ip = wifiManager.getConnectionInfo().getIpAddress();
+        ip = Integer.reverseBytes(ip);
+        byte[] addr = BigInteger.valueOf(ip).toByteArray();
+        try {
+            InetAddress inetAddress = InetAddress.getByAddress(addr);
+            currentIp = inetAddress.toString().substring(1);
+            int lastDot = currentIp.lastIndexOf(".");
+            return currentIp.substring(0, lastDot + 1);
+        } catch (UnknownHostException e) {
+            return "0.0.0.";
+        }
     }
 
     /**

@@ -59,6 +59,18 @@
                     android:layout_height="wrap_content"
                     android:text="@string/device_vendor" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/lockIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/device_icon"
+                android:cropToPadding="false"
+                android:padding="@dimen/activity_horizontal_margin"
+                android:visibility="invisible"
+                card_view:srcCompat="@drawable/ic_lock_white_24dp" />
+
         </LinearLayout>
 
         <LinearLayout

@@ -241,6 +241,13 @@ public class StoryActivity extends AppCompatActivity {
             ip.setText(deviceDAO.getIP());
             TextView vendor = deviceView.findViewById(R.id.vendor);
             vendor.setText(deviceDAO.getVendor());
+
+            // Show the lock icon if device is password protected
+            if (deviceDAO.isProtected()) {
+                ImageView lockIcon = deviceView.findViewById(R.id.lockIcon);
+                lockIcon.setVisibility(View.VISIBLE);
+            }
+
             deviceView.setId(deviceDAO.getId());
             mainLinearLayout.addView(deviceView, mainLinearLayout.indexOfChild(addPictureCard));
         }
