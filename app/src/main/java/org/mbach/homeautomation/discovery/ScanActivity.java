@@ -3,6 +3,7 @@ package org.mbach.homeautomation.discovery;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,10 +11,10 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +33,7 @@ import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.db.OuiDB;
 
 import org.mbach.homeautomation.device.DeviceDAO;
+import org.mbach.homeautomation.story.StoryActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,6 +90,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 existingDevices.put(deviceDAO.getIP(), deviceDAO);
                 LinearLayout detectedDevicesLayout = findViewById(R.id.detectedDevicesLayout);
                 View card = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
+
+                Button selectDevice = card.findViewById(R.id.select_device);
+                selectDevice.setTag(R.id.cardDevice, deviceDAO);
+
                 cards.append(deviceDAO.getId(), card);
                 TextView name = card.findViewById(R.id.name);
                 if (deviceDAO.getName() != null && !deviceDAO.getName().isEmpty()) {
@@ -276,7 +282,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             }
 
             // If a device isn't user's phone, try to guess open ports and reachable actions
-            // A limited list of TCP/UDP port are scanned, based on my own devices (no need to scan all 65535 ports)
+            // A limited set of TCP/UDP port are scanned, based on my own devices (no need to scan all 65535 ports)
             // Open ports are usually 80, 3000, 8080, 10000 (web, NodeJS server on Raspberry PI, some Home Automation "standard" ports like Zigbee, etc)
             if (!asyncNetworkRequest.isSelfFound()) {
                 scanPort(asyncNetworkRequest.getIp());
@@ -285,6 +291,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         if (t == 254) {
             ProgressBar scanProgressBar = findViewById(R.id.scanProgressBar);
             scanProgressBar.setVisibility(View.GONE);
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Toolbar toolbarScan = findViewById(R.id.toolbarScan);
+                toolbarScan.setElevation(getResources().getDimension(R.dimen.app_bar));
+            }
             t = 0;
             Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.scan_completed, Snackbar.LENGTH_LONG).show();
         }
@@ -394,31 +404,24 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      */
     public void selectDevice(View view) {
         Button button = (Button) view;
-        CardView cardView = (CardView) view.getParent().getParent().getParent();
+        DeviceDAO device = (DeviceDAO) button.getTag(R.id.cardDevice);
 
         boolean isActivated = button.isActivated();
         if (isActivated) {
             button.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
             button.setText(R.string.select_device_unselected);
-            for (DeviceDAO device : existingDevices.values()) {
-                if (device.getId() == cardView.getId()) {
-                    pendingDevices.remove(device);
-                    updateFab();
-                    break;
-                }
-            }
+            pendingDevices.remove(device);
+            updateFab();
+            button.setActivated(false);
+        } else if (device.isProtected()) {
+            showCredentialsDialog(device);
         } else {
             button.setTextColor(getResources().getColor(R.color.accent));
             button.setText(R.string.select_device_selected);
-            for (DeviceDAO device : existingDevices.values()) {
-                if (device.getId() == cardView.getId()) {
-                    pendingDevices.add(device);
-                    updateFab();
-                    break;
-                }
-            }
+            pendingDevices.add(device);
+            updateFab();
+            button.setActivated(true);
         }
-        button.setActivated(!isActivated);
     }
 
     /**
@@ -431,5 +434,22 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         } else {
             fab.show();
         }
+    }
+
+    private void showCredentialsDialog(final DeviceDAO deviceDAO) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_device_protected_title)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        LayoutInflater inflater = getLayoutInflater();
+        builder.setView(inflater.inflate(R.layout.dialog_device_protected, null));
+        builder.create().show();
     }
 }

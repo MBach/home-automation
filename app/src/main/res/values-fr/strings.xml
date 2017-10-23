@@ -64,6 +64,10 @@
     <string name="scan_no_name_detected">(aucun nom détecté)</string>
     <string name="default_device_name">Nom par défaut</string>
 
+    <string name="dialog_device_protected_title">Périphérique sécurisé</string>
+    <string name="device_login">Identifiant</string>
+    <string name="device_password">Mot de passe</string>
+
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions à effectuer lorsque le scénario est activé</string>
     <string name="device_actions_when_disabled">Actions à effectuer lorsque le scénario est désactivé</string>

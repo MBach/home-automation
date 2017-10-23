@@ -23,6 +23,7 @@
                 android:layout_width="0dp"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/primary"
+                android:elevation="4dp"
                 android:theme="@style/ThemeOverlay.AppCompat"
                 app:layout_collapseMode="pin"
                 app:layout_constraintBottom_toTopOf="@+id/scrollView"

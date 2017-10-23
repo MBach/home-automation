@@ -70,6 +70,10 @@
     <string name="scan_no_name_detected">(no name detected)</string>
     <string name="default_device_name">Default name</string>
 
+    <string name="dialog_device_protected_title">Device is protected</string>
+    <string name="device_login">Login</string>
+    <string name="device_password">Password</string>
+
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions to perform when story is enabled</string>
     <string name="device_actions_when_disabled">Actions to perform when story is disabled</string>
