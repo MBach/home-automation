@@ -21,6 +21,7 @@ public class DeviceDAO implements Parcelable {
     private String vendor;
     private String lastSeen;
     private boolean isProtected;
+    private boolean isLocked = true;
 
     private List<DeviceActionDAO> actions;
 
@@ -118,12 +119,20 @@ public class DeviceDAO implements Parcelable {
         this.actions = actions;
     }
 
+    public boolean isProtected() {
+        return isProtected;
+    }
+
     public void setProtected(boolean isProtected) {
         this.isProtected = isProtected;
     }
 
-    public boolean isProtected() {
-        return isProtected;
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean isLocked) {
+        this.isLocked = isLocked;
     }
 
     @Override

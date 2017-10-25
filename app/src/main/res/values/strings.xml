@@ -73,6 +73,9 @@
     <string name="dialog_device_protected_title">Device is protected</string>
     <string name="device_username">Username</string>
     <string name="device_password">Password</string>
+    <string name="dialog_error_field_required">Field required</string>
+    <string name="dialog_auth_failed">Authentication failed</string>
+    <string name="dialog_auth_success">Authentication successful!</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions to perform when story is enabled</string>

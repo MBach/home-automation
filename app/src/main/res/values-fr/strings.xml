@@ -67,6 +67,9 @@
     <string name="dialog_device_protected_title">Périphérique sécurisé</string>
     <string name="device_username">Identifiant</string>
     <string name="device_password">Mot de passe</string>
+    <string name="dialog_error_field_required">Champ obligatoire</string>
+    <string name="dialog_auth_failed">Échec de l’authentification</string>
+    <string name="dialog_auth_success">Authentification réussie !</string>
 
     <!-- DeviceActivity -->
     <string name="device_actions_when_enabled">Actions à effectuer lorsque le scénario est activé</string>

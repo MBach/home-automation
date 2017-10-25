@@ -13,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
@@ -130,6 +131,12 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             }
         });
         startDiscovery();
+    }
+
+    @Override
+    protected void onStop () {
+        super.onStop();
+        requestQueue.cancelAll(TAG);
     }
 
     @Override
@@ -430,15 +437,24 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             pendingDevices.remove(device);
             updateFab();
             button.setActivated(false);
-        } else if (device.isProtected()) {
-            showCredentialsDialog(device);
+        } else if (device.isProtected() && device.isLocked()) {
+            showCredentialsDialog(button, device);
         } else {
-            button.setTextColor(getResources().getColor(R.color.accent));
-            button.setText(R.string.select_device_selected);
-            pendingDevices.add(device);
-            updateFab();
-            button.setActivated(true);
+            addDeviceToPending(button, device);
         }
+    }
+
+    /**
+     *
+     * @param button button which triggered the action
+     * @param device associated device to check (if protected)
+     */
+    private void addDeviceToPending(Button button, DeviceDAO device) {
+        button.setTextColor(getResources().getColor(R.color.accent));
+        button.setText(R.string.select_device_selected);
+        pendingDevices.add(device);
+        updateFab();
+        button.setActivated(true);
     }
 
     /**
@@ -453,26 +469,41 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
-    private void showCredentialsDialog(final DeviceDAO deviceDAO) {
+    private void showCredentialsDialog(final Button b, final DeviceDAO deviceDAO) {
         final View content = View.inflate(this, R.layout.dialog_device_protected, null);
-        new AlertDialog.Builder(this)
+        final AlertDialog d = new AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_device_protected_title)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                .setPositiveButton(android.R.string.yes, null)
+                .setNegativeButton(R.string.cancel, null)
+                .setView(content).create();
+
+        d.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(final DialogInterface dialog) {
+                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int id) {
+                    public void onClick(View view) {
                         EditText username = content.findViewById(R.id.deviceUsername);
                         EditText password = content.findViewById(R.id.devicePassword);
-                        checkCredentials(deviceDAO, username.getText().toString(), password.getText().toString());
+                        if (TextUtils.isEmpty(username.getText())) {
+                            username.setError(getString(R.string.dialog_error_field_required));
+                            username.requestFocus();
+                        } else if (TextUtils.isEmpty(password.getText())) {
+                            password.setError(getString(R.string.dialog_error_field_required));
+                            password.requestFocus();
+                        } else {
+                            dialog.dismiss();
+                            checkCredentials(b, deviceDAO, username.getText().toString(), password.getText().toString());
+                        }
                     }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {}
-                })
-                .setView(content).create().show();
+                });
+            }
+        });
+        d.show();
     }
 
-    private void checkCredentials(final DeviceDAO deviceDAO, String username, String password) {
+    private void checkCredentials(final Button button, final DeviceDAO deviceDAO, String username, String password) {
 
         String uri = Uri.parse(String.format("http://%s:%s/", deviceDAO.getIP(), deviceDAO.getPort()))
                 .buildUpon().build().toString();
@@ -484,11 +515,13 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             @Override
             public void onResponse(String response) {
                 Log.d(TAG, "onResponse = " + response);
+                Toast.makeText(ScanActivity.this, R.string.dialog_auth_success, Toast.LENGTH_SHORT).show();
+                addDeviceToPending(button, deviceDAO);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "onErrorResponse = " + error);
+                Toast.makeText(ScanActivity.this, R.string.dialog_auth_failed, Toast.LENGTH_SHORT).show();
             }
         }) {
             @Override
