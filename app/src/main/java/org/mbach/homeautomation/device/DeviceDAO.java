@@ -15,6 +15,7 @@ public class DeviceDAO implements Parcelable {
 
     private int id;
     private String IP;
+    private int port;
     private String SSID;
     private String name;
     private String vendor;
@@ -36,6 +37,7 @@ public class DeviceDAO implements Parcelable {
     private DeviceDAO(Parcel in) {
         id = in.readInt();
         IP = in.readString();
+        port = in.readInt();
         SSID = in.readString();
         name = in.readString();
         vendor = in.readString();
@@ -60,6 +62,14 @@ public class DeviceDAO implements Parcelable {
         this.IP = IP;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public String getSSID() {
         return SSID;
     }
@@ -67,7 +77,6 @@ public class DeviceDAO implements Parcelable {
     public void setSSID(String SSID) {
         this.SSID = SSID;
     }
-
 
     public String getName() {
         return name;
@@ -126,6 +135,7 @@ public class DeviceDAO implements Parcelable {
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeInt(id);
         parcel.writeString(IP);
+        parcel.writeInt(port);
         parcel.writeString(SSID);
         parcel.writeString(name);
         parcel.writeString(vendor);

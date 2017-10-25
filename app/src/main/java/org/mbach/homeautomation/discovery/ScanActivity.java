@@ -2,6 +2,7 @@ package org.mbach.homeautomation.discovery;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,18 +13,26 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.jaredrummler.android.device.DeviceName;
 import com.stealthcopter.networktools.PortScan;
 
@@ -33,7 +42,6 @@ import org.mbach.homeautomation.db.HomeAutomationDB;
 import org.mbach.homeautomation.db.OuiDB;
 
 import org.mbach.homeautomation.device.DeviceDAO;
-import org.mbach.homeautomation.story.StoryActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -69,6 +77,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private final OuiDB ouiDB = new OuiDB(this);
     private WifiManager wifiManager;
     private String currentIp;
+    private RequestQueue requestQueue = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +86,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         setTitle(R.string.category_scan_for_devices);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        requestQueue = Volley.newRequestQueue(this);
 
         final Toolbar toolbar = findViewById(R.id.toolbarScan);
         setSupportActionBar(toolbar);
@@ -323,9 +333,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                         int statusCode = urlConnection.getResponseCode();
                         /// TODO guess actions
                         // DeviceActionDAO deviceActionDAO = new DeviceActionDAO();
-                        if (statusCode == 200) {
+                        if (statusCode == HttpURLConnection.HTTP_OK) {
                             Log.d(TAG, "we are connected to " + ip);
-                        } else if (statusCode == 401){
+                        } else if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED){
                             // Device is protected
                             Log.d(TAG, "Device is protected " + statusCode);
                             isProtected = true;
@@ -340,7 +350,11 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 @Override
                 public void onFinished(ArrayList<Integer> openPorts) {
                     Log.d(TAG, "ports opened = " + openPorts + " for " + ip);
-                    onPortScanCompleted(ip, isProtected);
+                    if (openPorts.size() > 0) {
+                        onPortScanCompleted(ip, openPorts.get(0), isProtected);
+                    } else {
+                        onPortScanCompleted(ip, 0, isProtected);
+                    }
                 }
             });
         } catch (UnknownHostException e) {
@@ -353,7 +367,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
      * @param ip the ip
      * @param isProtected if current scanned device is protected
      */
-    public void onPortScanCompleted(String ip, final boolean isProtected) {
+    public void onPortScanCompleted(String ip, int port, final boolean isProtected) {
         // It is certain that device has been saved before
         final DeviceDAO deviceDAO = existingDevices.get(ip);
         final View device = cards.get(deviceDAO.getId());
@@ -363,14 +377,17 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             @Override
             public void run() {
                 if (isProtected) {
-                    ImageView lockIcon = device.findViewById(R.id.lockIcon);
-                    lockIcon.setVisibility(View.VISIBLE);
+                    if (device != null) {
+                        ImageView lockIcon = device.findViewById(R.id.lockIcon);
+                        lockIcon.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     Log.d(TAG, "device is not protected, checking for protocol");
                 }
             }
         });
 
+        deviceDAO.setPort(port);
         deviceDAO.setProtected(isProtected);
         db.updateDevice(deviceDAO);
     }
@@ -437,19 +454,50 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     }
 
     private void showCredentialsDialog(final DeviceDAO deviceDAO) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        final View content = View.inflate(this, R.layout.dialog_device_protected, null);
+        new AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_device_protected_title)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id) {
-
+                        EditText username = content.findViewById(R.id.deviceUsername);
+                        EditText password = content.findViewById(R.id.devicePassword);
+                        checkCredentials(deviceDAO, username.getText().toString(), password.getText().toString());
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                });
-        LayoutInflater inflater = getLayoutInflater();
-        builder.setView(inflater.inflate(R.layout.dialog_device_protected, null));
-        builder.create().show();
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {}
+                })
+                .setView(content).create().show();
+    }
+
+    private void checkCredentials(final DeviceDAO deviceDAO, String username, String password) {
+
+        String uri = Uri.parse(String.format("http://%s:%s/", deviceDAO.getIP(), deviceDAO.getPort()))
+                .buildUpon().build().toString();
+        String credentials = username + ":" + password;
+        byte[] t = credentials.getBytes();
+        byte[] auth = Base64.encode(t, Base64.DEFAULT);
+        final String basicAuthValue = new String(auth);
+        requestQueue.add(new StringRequest(Request.Method.POST, uri, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "onResponse = " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "onErrorResponse = " + error);
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Authorization", "Basic " + basicAuthValue);
+                params.put("Connection", "close");
+                return params;
+            }
+        });
     }
 }

@@ -53,6 +53,7 @@ public class HomeAutomationDB {
     static class DeviceEntry implements BaseColumns {
         static final String TABLE_DEVICE = "table_device";
         static final String IP = "IP";
+        static final String PORT = "PORT";
         static final String SSID = "SSID";
         static final String NAME = "NAME";
         static final String VENDOR = "VENDOR";
@@ -61,6 +62,7 @@ public class HomeAutomationDB {
         static final String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + IP + " TEXT NOT NULL, "
+                + PORT + " INTEGER NOT NULL, "
                 + SSID + " TEXT NOT NULL, "
                 + NAME + " TEXT, "
                 + VENDOR + " TEXT, "
@@ -219,6 +221,7 @@ public class HomeAutomationDB {
         open();
         ContentValues values = new ContentValues();
         values.put(DeviceEntry.IP, device.getIP());
+        values.put(DeviceEntry.PORT, device.getPort());
         values.put(DeviceEntry.SSID, device.getSSID());
         values.put(DeviceEntry.NAME, device.getName());
         values.put(DeviceEntry.VENDOR, device.getVendor());
@@ -233,6 +236,8 @@ public class HomeAutomationDB {
         open();
         ContentValues values = new ContentValues();
         values.put(DeviceEntry.IP, device.getIP());
+        values.put(DeviceEntry.PORT, device.getPort());
+        Log.d(TAG, "port = " + device.getPort());
         values.put(DeviceEntry.SSID, device.getSSID());
         values.put(DeviceEntry.NAME, device.getName());
         values.put(DeviceEntry.VENDOR, device.getVendor());
@@ -250,6 +255,7 @@ public class HomeAutomationDB {
                 new String[] {
                         DeviceEntry._ID,
                         DeviceEntry.IP,
+                        DeviceEntry.PORT,
                         DeviceEntry.SSID,
                         DeviceEntry.NAME,
                         DeviceEntry.VENDOR,
@@ -265,6 +271,7 @@ public class HomeAutomationDB {
                 int i = -1;
                 DeviceDAO device = new DeviceDAO(entries.getInt(++i));
                 device.setIP(entries.getString(++i));
+                device.setPort(entries.getInt(++i));
                 device.setSSID(entries.getString(++i));
                 device.setName(entries.getString(++i));
                 device.setVendor(entries.getString(++i));
@@ -309,6 +316,7 @@ public class HomeAutomationDB {
             new String[] {
                 StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + StoryDeviceEntry.DEVICE_ID,
                 DeviceEntry.IP,
+                DeviceEntry.PORT,
                 DeviceEntry.SSID,
                 DeviceEntry.NAME,
                 DeviceEntry.VENDOR,
@@ -324,6 +332,7 @@ public class HomeAutomationDB {
             int i = -1;
             DeviceDAO device = new DeviceDAO((int) entries.getLong(++i));
             device.setIP(entries.getString(++i));
+            device.setPort(entries.getInt(++i));
             device.setSSID(entries.getString(++i));
             device.setName(entries.getString(++i));
             device.setVendor(entries.getString(++i));

@@ -65,7 +65,7 @@
     <string name="default_device_name">Nom par défaut</string>
 
     <string name="dialog_device_protected_title">Périphérique sécurisé</string>
-    <string name="device_login">Identifiant</string>
+    <string name="device_username">Identifiant</string>
     <string name="device_password">Mot de passe</string>
 
     <!-- DeviceActivity -->

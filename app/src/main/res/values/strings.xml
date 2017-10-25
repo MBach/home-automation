@@ -71,7 +71,7 @@
     <string name="default_device_name">Default name</string>
 
     <string name="dialog_device_protected_title">Device is protected</string>
-    <string name="device_login">Login</string>
+    <string name="device_username">Username</string>
     <string name="device_password">Password</string>
 
     <!-- DeviceActivity -->
