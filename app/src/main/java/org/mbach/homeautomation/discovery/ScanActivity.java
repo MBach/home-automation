@@ -243,6 +243,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             } else {
                 deviceDAO = new DeviceDAO();
                 device = getLayoutInflater().inflate(R.layout.scan_activity_card_device, detectedDevicesLayout, false);
+                // Link view and DAO
+                Button selectDevice = device.findViewById(R.id.select_device);
+                selectDevice.setTag(R.id.cardDevice, deviceDAO);
             }
 
             // Toggle default state of the Card that has been previously instantiated
@@ -295,6 +298,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 deviceDAO.setId((int) id);
                 device.setId((int) id);
                 detectedDevicesLayout.addView(device);
+                cards.append(deviceDAO.getId(), device);
                 existingDevices.put(asyncNetworkRequest.getIp(), deviceDAO);
             }
 
@@ -302,7 +306,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             // A limited set of TCP/UDP port are scanned, based on my own devices (no need to scan all 65535 ports)
             // Open ports are usually 80, 3000, 8080, 10000 (web, NodeJS server on Raspberry PI, some Home Automation "standard" ports like Zigbee, etc)
             if (!asyncNetworkRequest.isSelfFound()) {
-                scanPort(asyncNetworkRequest.getIp());
+                scanPort(deviceDAO);
             }
         }
         if (t == 254) {
@@ -320,11 +324,11 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     /**
      * Scan a device to find open ports.
      *
-     * @param ip device to scan
+     * @param device device to scan
      */
-    private void scanPort(final String ip) {
+    private void scanPort(final DeviceDAO device) {
         try {
-            PortScan.onAddress(ip).setTimeOutMillis(1000).setPorts(standardPorts).doScan(new PortScan.PortListener() {
+            PortScan.onAddress(device.getIP()).setTimeOutMillis(1000).setPorts(standardPorts).doScan(new PortScan.PortListener() {
 
                 private boolean isProtected;
 
@@ -333,15 +337,14 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                     if (!open) {
                         return;
                     }
-                    Log.d(TAG, "port " + port + " is opened for " + ip);
+                    Log.d(TAG, "port " + port + " is opened for " + device.getIP());
+                    //checkCredentials(button, device);
                     try {
-                        HttpURLConnection urlConnection = (HttpURLConnection) new URL(String.format("http://%s:%s/", ip, port)).openConnection();
+                        HttpURLConnection urlConnection = (HttpURLConnection) new URL(String.format("http://%s:%s/", device.getIP(), port)).openConnection();
                         urlConnection.connect();
                         int statusCode = urlConnection.getResponseCode();
-                        /// TODO guess actions
-                        // DeviceActionDAO deviceActionDAO = new DeviceActionDAO();
                         if (statusCode == HttpURLConnection.HTTP_OK) {
-                            Log.d(TAG, "we are connected to " + ip);
+                            Log.d(TAG, "we are connected to " + device.getIP());
                         } else if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED){
                             // Device is protected
                             Log.d(TAG, "Device is protected " + statusCode);
@@ -356,12 +359,19 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
 
                 @Override
                 public void onFinished(ArrayList<Integer> openPorts) {
-                    Log.d(TAG, "ports opened = " + openPorts + " for " + ip);
-                    if (openPorts.size() > 0) {
-                        onPortScanCompleted(ip, openPorts.get(0), isProtected);
-                    } else {
-                        onPortScanCompleted(ip, 0, isProtected);
+                    Log.d(TAG, "ports opened = " + openPorts + " for " + device.getIP());
+                    boolean hasActions = openPorts.size() > 0;
+                    /// XXX guess actions, not only rely on open ports
+                    /// XXX if port 80 if opened, try to get some JSON metadata
+                    if (hasActions) {
+                        if (isProtected) {
+                            device.setProtected(true);
+                            device.setLocked(true);
+                        }
+                        device.setPort(openPorts.get(0));
+                        db.updateDevice(device);
                     }
+                    setDeviceSelectable(device, hasActions);
                 }
             });
         } catch (UnknownHostException e) {
@@ -369,34 +379,26 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
-    /**
-     *
-     * @param ip the ip
-     * @param isProtected if current scanned device is protected
-     */
-    public void onPortScanCompleted(String ip, int port, final boolean isProtected) {
-        // It is certain that device has been saved before
-        final DeviceDAO deviceDAO = existingDevices.get(ip);
-        final View device = cards.get(deviceDAO.getId());
-
+    public void setDeviceSelectable(final DeviceDAO device, final boolean hasActions) {
+        final View view = cards.get(device.getId());
+        if (view == null) {
+            // Device wasn't saved yet?
+            return;
+        }
         /// XXX: wow, seriously?
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (isProtected) {
-                    if (device != null) {
-                        ImageView lockIcon = device.findViewById(R.id.lockIcon);
-                        lockIcon.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    Log.d(TAG, "device is not protected, checking for protocol");
+                // Let's assume that protected device has actions
+                if (device.isProtected()) {
+                    ImageView lockIcon = view.findViewById(R.id.lockIcon);
+                    lockIcon.setVisibility(View.VISIBLE);
+                } else if (!hasActions) {
+                    Button selectDevice = view.findViewById(R.id.select_device);
+                    selectDevice.setEnabled(false);
                 }
             }
         });
-
-        deviceDAO.setPort(port);
-        deviceDAO.setProtected(isProtected);
-        db.updateDevice(deviceDAO);
     }
 
     /**
@@ -438,7 +440,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             updateFab();
             button.setActivated(false);
         } else if (device.isProtected() && device.isLocked()) {
-            showCredentialsDialog(button, device);
+            showCredentialsDialog(device);
         } else {
             addDeviceToPending(button, device);
         }
@@ -469,7 +471,7 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         }
     }
 
-    private void showCredentialsDialog(final Button b, final DeviceDAO deviceDAO) {
+    private void showCredentialsDialog(final DeviceDAO deviceDAO) {
         final View content = View.inflate(this, R.layout.dialog_device_protected, null);
         final AlertDialog d = new AlertDialog.Builder(this)
                 .setTitle(R.string.dialog_device_protected_title)
@@ -494,7 +496,9 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                             password.requestFocus();
                         } else {
                             dialog.dismiss();
-                            checkCredentials(b, deviceDAO, username.getText().toString(), password.getText().toString());
+                            deviceDAO.setUsername(username.getText().toString());
+                            deviceDAO.setPassword(password.getText().toString());
+                            checkCredentials(deviceDAO);
                         }
                     }
                 });
@@ -503,11 +507,11 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         d.show();
     }
 
-    private void checkCredentials(final Button button, final DeviceDAO deviceDAO, String username, String password) {
+    private void checkCredentials(final DeviceDAO deviceDAO) {
 
         String uri = Uri.parse(String.format("http://%s:%s/", deviceDAO.getIP(), deviceDAO.getPort()))
                 .buildUpon().build().toString();
-        String credentials = username + ":" + password;
+        String credentials = deviceDAO.getUsername() + ":" + deviceDAO.getPassword();
         byte[] t = credentials.getBytes();
         byte[] auth = Base64.encode(t, Base64.DEFAULT);
         final String basicAuthValue = new String(auth);
@@ -516,7 +520,12 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             public void onResponse(String response) {
                 Log.d(TAG, "onResponse = " + response);
                 Toast.makeText(ScanActivity.this, R.string.dialog_auth_success, Toast.LENGTH_SHORT).show();
-                addDeviceToPending(button, deviceDAO);
+                View card = cards.get(deviceDAO.getId());
+                ImageView lockIcon = card.findViewById(R.id.lockIcon);
+                lockIcon.setImageResource(R.drawable.ic_lock_open_white_24dp);
+                addDeviceToPending((Button) card.findViewById(R.id.select_device), deviceDAO);
+                deviceDAO.setLocked(false);
+                db.updateDevice(deviceDAO);
             }
         }, new Response.ErrorListener() {
             @Override

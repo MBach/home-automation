@@ -65,7 +65,7 @@
                 android:cropToPadding="false"
                 android:padding="@dimen/activity_horizontal_margin"
                 android:visibility="invisible"
-                card_view:srcCompat="@drawable/ic_lock_white_24dp" />
+                card_view:srcCompat="@drawable/ic_lock_outline_white_24dp" />
 
         </LinearLayout>
 

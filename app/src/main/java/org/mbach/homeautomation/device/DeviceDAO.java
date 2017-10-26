@@ -21,7 +21,9 @@ public class DeviceDAO implements Parcelable {
     private String vendor;
     private String lastSeen;
     private boolean isProtected;
-    private boolean isLocked = true;
+    private boolean isLocked;
+    private String username;
+    private String password;
 
     private List<DeviceActionDAO> actions;
 
@@ -133,6 +135,22 @@ public class DeviceDAO implements Parcelable {
 
     public void setLocked(boolean isLocked) {
         this.isLocked = isLocked;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
