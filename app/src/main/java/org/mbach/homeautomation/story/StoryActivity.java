@@ -367,6 +367,7 @@ public class StoryActivity extends AppCompatActivity {
     public void configureDevice(View button) {
         DeviceDAO deviceDAO = (DeviceDAO) button.getTag(R.id.cardDevice);
         Intent intent = new Intent(getApplicationContext(), DeviceActivity.class);
+        intent.putExtra(Constants.EXTRA_STORY_ID, story.getId());
         intent.putExtra(Constants.EXTRA_DEVICE_ID, deviceDAO.getId());
         intent.putExtra(Constants.EXTRA_DEVICE_NAME, deviceDAO.getName());
         intent.putExtra(Constants.EXTRA_DEVICE_IP, deviceDAO.getIP());

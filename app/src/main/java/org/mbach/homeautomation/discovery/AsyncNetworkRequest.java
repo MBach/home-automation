@@ -38,9 +38,6 @@ class AsyncNetworkRequest extends AsyncTask<String, Void, String> {
             String address = strings[0];
             InetAddress inetAddress = InetAddress.getByName(address);
             if (inetAddress != null && inetAddress.isReachable(100)){
-                Log.d(TAG, inetAddress.getHostName());
-                Log.d(TAG, inetAddress.getCanonicalHostName());
-                Log.d(TAG, inetAddress.getHostAddress());
                 ip = inetAddress.getHostAddress();
                 deviceFound = true;
                 selfFound = selfIp.equals(ip);

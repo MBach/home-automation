@@ -23,7 +23,7 @@ class SQLiteHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(HomeAutomationDB.StoryEntry.CREATE_TABLE_STORY);
         sqLiteDatabase.execSQL(HomeAutomationDB.DeviceEntry.CREATE_TABLE_DEVICE);
         sqLiteDatabase.execSQL(HomeAutomationDB.StoryDeviceEntry.CREATE_TABLE_STORY_DEVICE);
-        sqLiteDatabase.execSQL(HomeAutomationDB.DeviceActionEntry.CREATE_TABLE_DEVICE_ACTION);
+        sqLiteDatabase.execSQL(HomeAutomationDB.ActionEntry.CREATE_TABLE_ACTION);
     }
 
     @Override
@@ -32,7 +32,7 @@ class SQLiteHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.StoryEntry.TABLE_STORY));
         sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.DeviceEntry.TABLE_DEVICE));
         sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE));
-        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.DeviceActionEntry.TABLE_DEVICE_ACTION));
+        sqLiteDatabase.execSQL(String.format("DROP TABLE %s;", HomeAutomationDB.ActionEntry.CREATE_TABLE_ACTION));
         onCreate(sqLiteDatabase);
     }
 }

@@ -74,11 +74,12 @@ final class RequestTemplates {
 	}
 
 	/*
-<?xml version="1.0" encoding="UTF8"?><SMARTPLUG id="edimax">
-    <CMD id="get">
-        <Device.System.Power.State>ON</Device.System.Power.State>
-    </CMD>
-</SMARTPLUG>
+	<?xml version="1.0" encoding="UTF8"?>
+	<SMARTPLUG id="edimax">
+		<CMD id="get">
+			<Device.System.Power.State>ON</Device.System.Power.State>
+		</CMD>
+	</SMARTPLUG>
 	 */
 	private static final String getStatus = "<?xml version='1.0' encoding='UTF8'?>\n"
 			+ "<SMARTPLUG id='edimax'>\n"

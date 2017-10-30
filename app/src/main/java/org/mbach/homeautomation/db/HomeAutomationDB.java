@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import org.mbach.homeautomation.device.DeviceActionDAO;
 import org.mbach.homeautomation.device.DeviceDAO;
 import org.mbach.homeautomation.story.StoryDAO;
 
@@ -80,18 +81,19 @@ public class HomeAutomationDB {
      * Every device has at least one action, like "power on", "power off", "toggle", etc. Unlike StoryDeviceEntry,
      * this table is a simple 1 to N relationship.
      */
-    static class DeviceActionEntry implements BaseColumns {
-        static final String TABLE_DEVICE_ACTION = "table_device_action";
+    static class ActionEntry implements BaseColumns {
+        static final String TABLE_ACTION = "table_action";
         static final String DEVICE_ID = "DEVICE_ID";
         static final String NAME = "NAME";
-        static final String CREATE_TABLE_DEVICE_ACTION = "CREATE TABLE " + TABLE_DEVICE_ACTION + " ("
+        static final String CREATE_TABLE_ACTION = "CREATE TABLE " + TABLE_ACTION + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + DEVICE_ID + " INTEGER NOT NULL, "
                 + NAME + " TEXT NOT NULL);";
     }
 
     /**
-     *
+     * Junction table to link a story with some devices. It's possible to create as many stories as one wants, so
+     * it's a mapped with a complex relationship N to N.
      */
     static class StoryDeviceEntry implements BaseColumns {
         static final String TABLE_JUNCTION_STORY_DEVICE = "table_story_device";
@@ -100,6 +102,13 @@ public class HomeAutomationDB {
         static final String CREATE_TABLE_STORY_DEVICE = "CREATE TABLE " + TABLE_JUNCTION_STORY_DEVICE + " ("
                 + STORY_ID + " INTEGER NOT NULL, "
                 + DEVICE_ID + " INTEGER NOT NULL);";
+    }
+
+    static class StoryDeviceActionEntry implements BaseColumns {
+        static final String TABLE_STORY_DEVICE_ACTION = "table_story_device_action";
+        static final String STORY_ID = "STORY_ID";
+        static final String DEVICE_ID = "DEVICE_ID";
+        static final String ACTION_ID = "ACTION_ID";
     }
 
     public HomeAutomationDB(Context context){
@@ -362,5 +371,23 @@ public class HomeAutomationDB {
         }
         entries.close();
         story.setDevices(devices);
+    }
+
+    /// DEVICE AND ACTIONS
+
+    public List<DeviceActionDAO> getActionsForStoryAndDevice(long storyId, int deviceId) {
+        /// TODO junction to get full Action object
+        Cursor entries = sqLiteDatabase.query(StoryDeviceActionEntry.TABLE_STORY_DEVICE_ACTION, new String[] {
+                StoryDeviceActionEntry._ID,
+                StoryDeviceActionEntry.STORY_ID,
+                StoryDeviceActionEntry.DEVICE_ID,
+                StoryDeviceActionEntry.ACTION_ID
+        },
+                StoryDeviceActionEntry.STORY_ID + " = ? AND " + StoryDeviceActionEntry.DEVICE_ID + " = ?",
+                new String[] { String.valueOf(storyId), String.valueOf(deviceId) }, null,null,null);
+
+        List<DeviceActionDAO> deviceActions = new ArrayList<>();
+        entries.close();
+        return deviceActions;
     }
 }

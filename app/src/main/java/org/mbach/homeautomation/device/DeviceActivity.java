@@ -8,6 +8,9 @@ import android.view.MenuItem;
 
 import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.R;
+import org.mbach.homeautomation.db.HomeAutomationDB;
+
+import java.util.List;
 
 /**
  * DeviceActivity class.
@@ -17,7 +20,9 @@ import org.mbach.homeautomation.R;
  */
 public class DeviceActivity extends AppCompatActivity {
 
-    // private static final String TAG = "DeviceActivity";
+    private static final String TAG = "DeviceActivity";
+
+    private final HomeAutomationDB db = new HomeAutomationDB(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +34,8 @@ public class DeviceActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // long id = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
+        long storyId = getIntent().getLongExtra(Constants.EXTRA_STORY_ID, -1);
+        int deviceId = getIntent().getIntExtra(Constants.EXTRA_DEVICE_ID, -1);
         String deviceName = getIntent().getStringExtra(Constants.EXTRA_DEVICE_NAME);
         if (deviceName == null) {
             setTitle(getIntent().getStringExtra(Constants.EXTRA_DEVICE_IP));
@@ -37,20 +43,9 @@ public class DeviceActivity extends AppCompatActivity {
             setTitle(deviceName);
         }
 
-        /// XXX
-        /*StrictMode.ThreadPolicy threadPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(threadPolicy );
-        try {
-            PlugCredentials plugCredentials = new PlugCredentials("admin", "0000");
-            PlugConnection plugConnection = new LocalConnection(plugCredentials, deviceName);
-            SmartPlug smartPlug = new SmartPlug(plugConnection);
-            smartPlug.toggle();
-        } catch (MalformedURLException e) {
-            Log.d(TAG, e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, e.toString());
-        }*/
+        if (storyId != -1 && deviceId != -1) {
+            List<DeviceActionDAO> list = db.getActionsForStoryAndDevice(storyId, deviceId);
+        }
     }
 
     @Override

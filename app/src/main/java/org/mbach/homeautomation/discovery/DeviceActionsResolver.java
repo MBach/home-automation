@@ -70,12 +70,12 @@ class DeviceActionsResolver {
                 getActions(device);
                 break;
             default:
-                getActions(device);
+                Log.d(TAG, "TODO for device " + device);
                 break;
         }
     }
 
-    private void getActions(DeviceDAO device) {
+    private void getActions(final DeviceDAO device) {
         Log.d(TAG, "TODO getActions");
         String uri = Uri.parse(String.format("http://%s:%s/", device.getIP(), device.getPort()))
                 .buildUpon().build().toString();
