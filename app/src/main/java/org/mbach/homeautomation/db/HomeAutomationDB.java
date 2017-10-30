@@ -61,6 +61,7 @@ public class HomeAutomationDB {
         static final String IS_PROTECTED = "IS_PROTECTED";
         static final String USERNAME = "USERNAME";
         static final String PASSWORD = "PASSWORD";
+        static final String IS_LOCKED = "IS_LOCKED";
         static final String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + IP + " TEXT NOT NULL, "
@@ -71,7 +72,8 @@ public class HomeAutomationDB {
                 + LAST_SEEN + " INTEGER NOT NULL, "
                 + IS_PROTECTED + " INTEGER DEFAULT 0, "
                 + USERNAME + " TEXT, "
-                + PASSWORD + " TEXT);";
+                + PASSWORD + " TEXT, "
+                + IS_LOCKED + " INTEGER DEFAULT 0);";
     }
 
     /**
@@ -144,7 +146,6 @@ public class HomeAutomationDB {
         String selection = StoryEntry._ID + " = ?";
         String[] selectionArgs = { String.valueOf(story.getId()) };
         int r = sqLiteDatabase.update(StoryEntry.TABLE_STORY, values, selection, selectionArgs);
-        Log.d(TAG, "number of rows affected: " + r);
         if (r == 1) {
             if (story.getDevices() != null) {
                 setDevicesForStory(story, false);
@@ -233,6 +234,7 @@ public class HomeAutomationDB {
         values.put(DeviceEntry.IS_PROTECTED, device.isProtected() ? 1 : 0);
         values.put(DeviceEntry.USERNAME, device.getUsername());
         values.put(DeviceEntry.PASSWORD, device.getPassword());
+        values.put(DeviceEntry.IS_LOCKED, device.isLocked() ? 1 : 0);
         int id = (int) sqLiteDatabase.insert(DeviceEntry.TABLE_DEVICE, null, values);
         close();
         return id;
@@ -243,7 +245,6 @@ public class HomeAutomationDB {
         ContentValues values = new ContentValues();
         values.put(DeviceEntry.IP, device.getIP());
         values.put(DeviceEntry.PORT, device.getPort());
-        Log.d(TAG, "port = " + device.getPort());
         values.put(DeviceEntry.SSID, device.getSSID());
         values.put(DeviceEntry.NAME, device.getName());
         values.put(DeviceEntry.VENDOR, device.getVendor());
@@ -251,6 +252,7 @@ public class HomeAutomationDB {
         values.put(DeviceEntry.IS_PROTECTED, device.isProtected() ? 1 : 0);
         values.put(DeviceEntry.USERNAME, device.getUsername());
         values.put(DeviceEntry.PASSWORD, device.getPassword());
+        values.put(DeviceEntry.IS_LOCKED, device.isLocked() ? 1 : 0);
         String selection = DeviceEntry._ID + " = ?";
         String[] selectionArgs = {String.valueOf(device.getId())};
         sqLiteDatabase.update(DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
@@ -270,7 +272,8 @@ public class HomeAutomationDB {
                         DeviceEntry.LAST_SEEN,
                         DeviceEntry.IS_PROTECTED,
                         DeviceEntry.USERNAME,
-                        DeviceEntry.PASSWORD
+                        DeviceEntry.PASSWORD,
+                        DeviceEntry.IS_LOCKED
                 },
                 DeviceEntry.SSID + " = ?",
                 new String[] { SSID }, null,null,
@@ -289,6 +292,7 @@ public class HomeAutomationDB {
                 device.setProtected(entries.getInt(++i) == 1);
                 device.setUsername(entries.getString(++i));
                 device.setPassword(entries.getString(++i));
+                device.setLocked(entries.getInt(++i) == 1);
                 devices.add(device);
             }
         }
@@ -315,8 +319,7 @@ public class HomeAutomationDB {
                 ContentValues values = new ContentValues();
                 values.put(StoryDeviceEntry.STORY_ID, story.getId());
                 values.put(StoryDeviceEntry.DEVICE_ID, deviceId);
-                long id = sqLiteDatabase.insert(StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
-                Log.d(TAG, "inserted in junction table: " + id + " for story " + story.getId());
+                sqLiteDatabase.insert(StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE, null, values);
             }
         }
     }
@@ -335,13 +338,13 @@ public class HomeAutomationDB {
                 DeviceEntry.LAST_SEEN,
                 DeviceEntry.IS_PROTECTED,
                 DeviceEntry.USERNAME,
-                DeviceEntry.PASSWORD
+                DeviceEntry.PASSWORD,
+                DeviceEntry.IS_LOCKED
             },
             StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + StoryDeviceEntry.STORY_ID + " = ?",
             new String[] { String.valueOf(story.getId()) }, null,null, null);
 
         List<DeviceDAO> devices = new ArrayList<>();
-        Log.d(TAG, "This story has " + entries.getCount() + " devices for story " + story.getId());
         while (entries.moveToNext()) {
             int i = -1;
             DeviceDAO device = new DeviceDAO((int) entries.getLong(++i));
@@ -354,6 +357,7 @@ public class HomeAutomationDB {
             device.setProtected(entries.getInt(++i) == 1);
             device.setUsername(entries.getString(++i));
             device.setPassword(entries.getString(++i));
+            device.setLocked(entries.getInt(++i) == 1);
             devices.add(device);
         }
         entries.close();

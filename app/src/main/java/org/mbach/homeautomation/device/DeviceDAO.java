@@ -46,6 +46,7 @@ public class DeviceDAO implements Parcelable {
         vendor = in.readString();
         lastSeen = in.readString();
         isProtected = in.readInt() == 1;
+        isLocked = in.readInt() == 1;
         // actions = in.readArrayList(DeviceActionDAO.class.getClassLoader());
     }
 
@@ -168,6 +169,12 @@ public class DeviceDAO implements Parcelable {
         parcel.writeString(vendor);
         parcel.writeString(lastSeen);
         parcel.writeInt(isProtected ? 1 : 0);
+        parcel.writeInt(isLocked ? 1 : 0);
         // parcel.writeArray(actions.toArray());
+    }
+
+    @Override
+    public String toString() {
+        return "SSID = " + SSID + ", name = " + name + ", vendor = " + vendor + ", URL = " + IP + ":" + port;
     }
 }

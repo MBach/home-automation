@@ -345,6 +345,8 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                         int statusCode = urlConnection.getResponseCode();
                         if (statusCode == HttpURLConnection.HTTP_OK) {
                             Log.d(TAG, "we are connected to " + device.getIP());
+                            DeviceActionsResolver deviceActionsResolver = new DeviceActionsResolver(ScanActivity.this);
+                            deviceActionsResolver.guessActions(device, port);
                         } else if (statusCode == HttpURLConnection.HTTP_UNAUTHORIZED){
                             // Device is protected
                             Log.d(TAG, "Device is protected " + statusCode);
@@ -518,7 +520,6 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
         requestQueue.add(new StringRequest(Request.Method.POST, uri, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "onResponse = " + response);
                 Toast.makeText(ScanActivity.this, R.string.dialog_auth_success, Toast.LENGTH_SHORT).show();
                 View card = cards.get(deviceDAO.getId());
                 ImageView lockIcon = card.findViewById(R.id.lockIcon);
@@ -526,6 +527,8 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
                 addDeviceToPending((Button) card.findViewById(R.id.select_device), deviceDAO);
                 deviceDAO.setLocked(false);
                 db.updateDevice(deviceDAO);
+                DeviceActionsResolver deviceActionsResolver = new DeviceActionsResolver(ScanActivity.this);
+                deviceActionsResolver.guessActions(deviceDAO, deviceDAO.getPort());
             }
         }, new Response.ErrorListener() {
             @Override
