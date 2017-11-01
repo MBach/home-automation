@@ -15,6 +15,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,9 +28,14 @@ import org.mbach.homeautomation.Constants;
 import org.mbach.homeautomation.ImageUtils;
 import org.mbach.homeautomation.R;
 import org.mbach.homeautomation.db.HomeAutomationDB;
+import org.mbach.homeautomation.device.DeviceActionDAO;
+import org.mbach.homeautomation.device.DeviceDAO;
+import org.mbach.homeautomation.device.StoryDeviceActionDAO;
 import org.mbach.homeautomation.discovery.ScanActivity;
 import org.mbach.homeautomation.story.StoryActivity;
 import org.mbach.homeautomation.story.StoryDAO;
+
+import java.util.List;
 
 /**
  * MainActivity class.
@@ -39,7 +45,9 @@ import org.mbach.homeautomation.story.StoryDAO;
  */
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final String TAG = "MainActivity";
     private DrawerLayout drawerLayout;
+    private final HomeAutomationDB db = new HomeAutomationDB(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void loadStories() {
         LinearLayout storiesLayout = findViewById(R.id.storiesLayout);
-        final HomeAutomationDB db = new HomeAutomationDB(this);
         for (final StoryDAO storyDAO : db.getStories()) {
 
             View storyView = getLayoutInflater().inflate(R.layout.card_story, storiesLayout, false);
@@ -156,9 +163,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             });
             TextView titleStory = storyView.findViewById(R.id.title);
             titleStory.setText(storyDAO.getTitle());
-            Switch toggleStory = storyView.findViewById(R.id.enabled);
-            toggleStory.setChecked(storyDAO.isEnabled());
-            toggleStory.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            final Switch s = storyView.findViewById(R.id.enabled);
+            s.setChecked(storyDAO.isEnabled());
+            s.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean enabled) {
                     storyDAO.setEnabled(enabled);
@@ -166,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         int text = enabled ? R.string.story_enabled : R.string.story_disabled;
                         Snackbar.make(findViewById(R.id.coordinatorLayout), text, Snackbar.LENGTH_SHORT).show();
                     }
+                    toggleStory(enabled, storyDAO);
                 }
             });
             Bitmap bitmap = ImageUtils.loadImage(getBaseContext(), storyDAO);
@@ -186,5 +194,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initOuiDb() {
         AsyncPopulateDb asyncNetworkRequest = new AsyncPopulateDb(this);
         asyncNetworkRequest.execute();
+    }
+
+    private void toggleStory(boolean enabled, StoryDAO story) {
+        List<DeviceDAO> devices = story.getDevices();
+        for (DeviceDAO device : devices) {
+            List<StoryDeviceActionDAO> actions = db.getActionsForStoryAndDevice(story.getId(), device.getId());
+            for (StoryDeviceActionDAO action : actions) {
+                if (enabled && action.isEnabled() || !enabled && !action.isEnabled()) {
+                    /// XXX should be optimized with JOIN request instead of fetching the whole list again
+                    List<DeviceActionDAO> deviceActions = db.getActionsForDevice(action.getDeviceId());
+                    DeviceActionDAO deviceAction = null;
+                    for (DeviceActionDAO d : deviceActions) {
+                        if (d.getId() == action.getActionId()) {
+                            deviceAction = d;
+                            break;
+                        }
+                    }
+                    if (deviceAction != null) {
+                        Log.d(TAG, "d = " + deviceAction.getName() + ", " + deviceAction.getCommand());
+                        CommandExecutor commandExecutor = new CommandExecutor(this);
+                        commandExecutor.send(device, deviceAction);
+                    }
+                }
+            }
+        }
     }
 }

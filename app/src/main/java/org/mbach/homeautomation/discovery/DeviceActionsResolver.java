@@ -1,7 +1,5 @@
 package org.mbach.homeautomation.discovery;
 
-
-import android.content.Context;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
@@ -14,9 +12,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.mbach.homeautomation.actions.EnumActions;
+import org.mbach.homeautomation.db.HomeAutomationDB;
+import org.mbach.homeautomation.device.DeviceActionDAO;
 import org.mbach.homeautomation.device.DeviceDAO;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,9 +37,11 @@ class DeviceActionsResolver {
     private static final int PORT_10000 = 10000;
 
     private RequestQueue requestQueue = null;
+    private ScanActivity scanActivity;
 
-    DeviceActionsResolver(Context context) {
-        requestQueue = Volley.newRequestQueue(context);
+    DeviceActionsResolver(ScanActivity scanActivity) {
+        this.requestQueue = Volley.newRequestQueue(scanActivity);
+        this.scanActivity = scanActivity;
     }
 
     void guessActions(DeviceDAO device, int port) {
@@ -63,8 +68,16 @@ class DeviceActionsResolver {
     private void detectOnPort10000(DeviceDAO device) {
         switch (device.getVendor()) {
             case "Edimax Technology Co. Ltd.":
-                Log.d(TAG, "TODO for Edimax");
-                getActions(device);
+                HomeAutomationDB db = scanActivity.getDb();
+                List<DeviceActionDAO> actions = new ArrayList<>();
+                actions.add(new DeviceActionDAO(device.getId(), EnumActions.STATUS.toString(), "STATUS"));
+                actions.add(new DeviceActionDAO(device.getId(), EnumActions.POWER_ON.toString(), "POWER_ON"));
+                actions.add(new DeviceActionDAO(device.getId(), EnumActions.POWER_OFF.toString(), "POWER_OFF"));
+                actions.add(new DeviceActionDAO(device.getId(), EnumActions.TOGGLE.toString(), "TOGGLE"));
+                device.setEndpoint("smartplug.cgi");
+                db.updateDevice(device);
+                db.createActionsForDevice(device, actions);
+                scanActivity.onActionsResolved();
                 break;
             case "Raspberry Pi Foundation":
                 getActions(device);

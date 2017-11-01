@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.mbach.homeautomation.device.DeviceActionDAO;
 import org.mbach.homeautomation.device.DeviceDAO;
+import org.mbach.homeautomation.device.StoryDeviceActionDAO;
 import org.mbach.homeautomation.story.StoryDAO;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class HomeAutomationDB {
 
     private static final String TAG = "HomeAutomationDB";
 
+
     /**
      * StoryEntry is an inner class which maps to a Story.
      *
@@ -44,7 +46,7 @@ public class HomeAutomationDB {
                 + _ID + " INTEGER PRIMARY KEY, "
                 + STORY_TITLE + " TEXT NOT NULL, "
                 + LAST_MODIFIED + " INTEGER NOT NULL, "
-                + ENABLED + " INTEGER DEFAULT 1, "
+                + ENABLED + " INTEGER DEFAULT 0, "
                 + IMAGE + " TEXT);";
     }
 
@@ -63,6 +65,7 @@ public class HomeAutomationDB {
         static final String USERNAME = "USERNAME";
         static final String PASSWORD = "PASSWORD";
         static final String IS_LOCKED = "IS_LOCKED";
+        static final String ENDPOINT = "ENDPOINT";
         static final String CREATE_TABLE_DEVICE = "CREATE TABLE " + TABLE_DEVICE + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + IP + " TEXT NOT NULL, "
@@ -74,21 +77,24 @@ public class HomeAutomationDB {
                 + IS_PROTECTED + " INTEGER DEFAULT 0, "
                 + USERNAME + " TEXT, "
                 + PASSWORD + " TEXT, "
-                + IS_LOCKED + " INTEGER DEFAULT 0);";
+                + IS_LOCKED + " INTEGER DEFAULT 0, "
+                + ENDPOINT + " TEXT);";
     }
 
     /**
      * Every device has at least one action, like "power on", "power off", "toggle", etc. Unlike StoryDeviceEntry,
-     * this table is a simple 1 to N relationship.
+     * this table is a simple 1 to N relationship. At this point, each action describes only a device: it's not linked to any story.
      */
     static class ActionEntry implements BaseColumns {
         static final String TABLE_ACTION = "table_action";
         static final String DEVICE_ID = "DEVICE_ID";
         static final String NAME = "NAME";
+        static final String CMD = "CMD";
         static final String CREATE_TABLE_ACTION = "CREATE TABLE " + TABLE_ACTION + " ("
                 + _ID + " INTEGER PRIMARY KEY, "
                 + DEVICE_ID + " INTEGER NOT NULL, "
-                + NAME + " TEXT NOT NULL);";
+                + NAME + " TEXT NOT NULL, "
+                + CMD + " TEXT NOT NULL, UNIQUE (" + DEVICE_ID + ", " + NAME + ", " + CMD + ") ON CONFLICT REPLACE);";
     }
 
     /**
@@ -104,11 +110,18 @@ public class HomeAutomationDB {
                 + DEVICE_ID + " INTEGER NOT NULL);";
     }
 
+
     static class StoryDeviceActionEntry implements BaseColumns {
-        static final String TABLE_STORY_DEVICE_ACTION = "table_story_device_action";
+        static final String TABLE_JUNCTION_STORY_DEVICE_ACTION = "table_story_device_action";
         static final String STORY_ID = "STORY_ID";
+        static final String STORY_ENABLED = "STORY_ENABLED";
         static final String DEVICE_ID = "DEVICE_ID";
         static final String ACTION_ID = "ACTION_ID";
+        static final String CREATE_TABLE_STORY_DEVICE_ACTION = "CREATE TABLE " + TABLE_JUNCTION_STORY_DEVICE_ACTION + " ("
+                + STORY_ID + " INTEGER NOT NULL, "
+                + STORY_ENABLED + " INTEGER NOT NULL, "
+                + DEVICE_ID + " INTEGER NOT NULL, "
+                + ACTION_ID + " INTEGER NOT NULL, UNIQUE (" + STORY_ID + ", " + STORY_ENABLED + ", " + DEVICE_ID + ", " + ACTION_ID + ") ON CONFLICT REPLACE);";
     }
 
     public HomeAutomationDB(Context context){
@@ -196,6 +209,7 @@ public class HomeAutomationDB {
                 story.setTitle(entries.getString(1));
                 story.setEnabled(entries.getInt(2) == 1);
                 story.setCoverPath(entries.getString(3));
+                getDevicesForStory(story);
                 stories.add(story);
             }
         }
@@ -244,6 +258,7 @@ public class HomeAutomationDB {
         values.put(DeviceEntry.USERNAME, device.getUsername());
         values.put(DeviceEntry.PASSWORD, device.getPassword());
         values.put(DeviceEntry.IS_LOCKED, device.isLocked() ? 1 : 0);
+        values.put(DeviceEntry.ENDPOINT, device.getEndpoint());
         int id = (int) sqLiteDatabase.insert(DeviceEntry.TABLE_DEVICE, null, values);
         close();
         return id;
@@ -262,6 +277,7 @@ public class HomeAutomationDB {
         values.put(DeviceEntry.USERNAME, device.getUsername());
         values.put(DeviceEntry.PASSWORD, device.getPassword());
         values.put(DeviceEntry.IS_LOCKED, device.isLocked() ? 1 : 0);
+        values.put(DeviceEntry.ENDPOINT, device.getEndpoint());
         String selection = DeviceEntry._ID + " = ?";
         String[] selectionArgs = {String.valueOf(device.getId())};
         sqLiteDatabase.update(DeviceEntry.TABLE_DEVICE, values, selection, selectionArgs);
@@ -282,7 +298,8 @@ public class HomeAutomationDB {
                         DeviceEntry.IS_PROTECTED,
                         DeviceEntry.USERNAME,
                         DeviceEntry.PASSWORD,
-                        DeviceEntry.IS_LOCKED
+                        DeviceEntry.IS_LOCKED,
+                        DeviceEntry.ENDPOINT
                 },
                 DeviceEntry.SSID + " = ?",
                 new String[] { SSID }, null,null,
@@ -302,6 +319,7 @@ public class HomeAutomationDB {
                 device.setUsername(entries.getString(++i));
                 device.setPassword(entries.getString(++i));
                 device.setLocked(entries.getInt(++i) == 1);
+                device.setEndpoint(entries.getString(++i));
                 devices.add(device);
             }
         }
@@ -348,7 +366,8 @@ public class HomeAutomationDB {
                 DeviceEntry.IS_PROTECTED,
                 DeviceEntry.USERNAME,
                 DeviceEntry.PASSWORD,
-                DeviceEntry.IS_LOCKED
+                DeviceEntry.IS_LOCKED,
+                DeviceEntry.ENDPOINT
             },
             StoryDeviceEntry.TABLE_JUNCTION_STORY_DEVICE + "." + StoryDeviceEntry.STORY_ID + " = ?",
             new String[] { String.valueOf(story.getId()) }, null,null, null);
@@ -367,6 +386,7 @@ public class HomeAutomationDB {
             device.setUsername(entries.getString(++i));
             device.setPassword(entries.getString(++i));
             device.setLocked(entries.getInt(++i) == 1);
+            device.setEndpoint(entries.getString(++i));
             devices.add(device);
         }
         entries.close();
@@ -375,19 +395,98 @@ public class HomeAutomationDB {
 
     /// DEVICE AND ACTIONS
 
-    public List<DeviceActionDAO> getActionsForStoryAndDevice(long storyId, int deviceId) {
-        /// TODO junction to get full Action object
-        Cursor entries = sqLiteDatabase.query(StoryDeviceActionEntry.TABLE_STORY_DEVICE_ACTION, new String[] {
-                StoryDeviceActionEntry._ID,
-                StoryDeviceActionEntry.STORY_ID,
-                StoryDeviceActionEntry.DEVICE_ID,
-                StoryDeviceActionEntry.ACTION_ID
-        },
+    public void createActionsForDevice(DeviceDAO device, List<DeviceActionDAO> actions) {
+        open();
+        sqLiteDatabase.beginTransaction();
+        for (DeviceActionDAO action : actions) {
+            ContentValues values = new ContentValues();
+            values.put(ActionEntry.DEVICE_ID, device.getId());
+            values.put(ActionEntry.NAME, action.getName());
+            values.put(ActionEntry.CMD, action.getCommand());
+            sqLiteDatabase.insert(ActionEntry.TABLE_ACTION, null, values);
+        }
+
+        sqLiteDatabase.setTransactionSuccessful();
+        sqLiteDatabase.endTransaction();
+        close();
+    }
+
+    public List<DeviceActionDAO> getActionsForDevice(int deviceId) {
+        open();
+        Log.d(TAG, "device = " + deviceId);
+        Cursor entries = sqLiteDatabase.query(ActionEntry.TABLE_ACTION,
+                new String[] {
+                    ActionEntry._ID,
+                    ActionEntry.NAME,
+                    ActionEntry.CMD
+                },
+                ActionEntry.DEVICE_ID + " = ?",
+                new String[] { String.valueOf(deviceId) }, null,null,null);
+
+        List<DeviceActionDAO> deviceActions = new ArrayList<>();
+        while (entries.moveToNext()) {
+            DeviceActionDAO deviceAction = new DeviceActionDAO(deviceId, entries.getString(1), entries.getString(2));
+            deviceAction.setId(entries.getInt(0));
+            deviceActions.add(deviceAction);
+        }
+        entries.close();
+        close();
+        return deviceActions;
+    }
+
+    /**
+     *
+     * @param storyId the story
+     * @param deviceId the device
+     * @return list
+     */
+    public List<StoryDeviceActionDAO> getActionsForStoryAndDevice(long storyId, int deviceId) {
+        open();
+        Log.d(TAG, "story = " + storyId + ", device = " + deviceId);
+        Cursor entries = sqLiteDatabase.query(StoryDeviceActionEntry.TABLE_JUNCTION_STORY_DEVICE_ACTION,
+                new String[] {
+                    StoryDeviceActionEntry.STORY_ENABLED,
+                    StoryDeviceActionEntry.ACTION_ID
+                },
                 StoryDeviceActionEntry.STORY_ID + " = ? AND " + StoryDeviceActionEntry.DEVICE_ID + " = ?",
                 new String[] { String.valueOf(storyId), String.valueOf(deviceId) }, null,null,null);
 
-        List<DeviceActionDAO> deviceActions = new ArrayList<>();
+        List<StoryDeviceActionDAO> storyDeviceActions = new ArrayList<>();
+        while (entries.moveToNext()) {
+            int i = -1;
+            StoryDeviceActionDAO storyDeviceAction = new StoryDeviceActionDAO();
+            storyDeviceAction.setStoryId(storyId);
+            storyDeviceAction.setEnabled(entries.getInt(++i) == 1);
+            storyDeviceAction.setDeviceId(deviceId);
+            storyDeviceAction.setActionId(entries.getLong(++i));
+            storyDeviceActions.add(storyDeviceAction);
+        }
         entries.close();
-        return deviceActions;
+        close();
+        return storyDeviceActions;
+    }
+
+    public void createActionForStoryAndDevice(long storyId, boolean enabled, DeviceActionDAO action) {
+        open();
+        ContentValues values = new ContentValues();
+        values.put(StoryDeviceActionEntry.STORY_ID, storyId);
+        values.put(StoryDeviceActionEntry.STORY_ENABLED, enabled);
+        values.put(StoryDeviceActionEntry.DEVICE_ID, action.getDeviceId());
+        values.put(StoryDeviceActionEntry.ACTION_ID, action.getId());
+        Log.d(TAG, "createActionForStoryAndDevice = " + storyId + ", " + enabled + ", " + action.getName());
+        sqLiteDatabase.insert(StoryDeviceActionEntry.TABLE_JUNCTION_STORY_DEVICE_ACTION, null, values);
+        close();
+    }
+
+    public void deleteActionForStoryAndDevice(long storyId, boolean enabled, DeviceActionDAO action) {
+        open();
+        String e = enabled ? "1" : "0";
+        String selection = StoryDeviceActionEntry.STORY_ID + " = ? AND "
+                + StoryDeviceActionEntry.STORY_ENABLED + " = ? AND "
+                + StoryDeviceActionEntry.DEVICE_ID + " = ? AND "
+                + StoryDeviceActionEntry.ACTION_ID + " = ?";
+        String[] selectionArgs = { String.valueOf(storyId), e, String.valueOf(action.getDeviceId()), String.valueOf(action.getId()) };
+        sqLiteDatabase.delete(StoryDeviceActionEntry.TABLE_JUNCTION_STORY_DEVICE_ACTION, selection, selectionArgs);
+        close();
     }
 }

@@ -24,6 +24,7 @@ public class DeviceDAO implements Parcelable {
     private boolean isLocked;
     private String username;
     private String password;
+    private String endpoint = "";
 
     private List<DeviceActionDAO> actions;
 
@@ -47,6 +48,7 @@ public class DeviceDAO implements Parcelable {
         lastSeen = in.readString();
         isProtected = in.readInt() == 1;
         isLocked = in.readInt() == 1;
+        endpoint = in.readString();
         // actions = in.readArrayList(DeviceActionDAO.class.getClassLoader());
     }
 
@@ -154,6 +156,14 @@ public class DeviceDAO implements Parcelable {
         this.password = password;
     }
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
     @Override
     public int describeContents() {
         return hashCode();
@@ -170,6 +180,7 @@ public class DeviceDAO implements Parcelable {
         parcel.writeString(lastSeen);
         parcel.writeInt(isProtected ? 1 : 0);
         parcel.writeInt(isLocked ? 1 : 0);
+        parcel.writeString(endpoint);
         // parcel.writeArray(actions.toArray());
     }
 

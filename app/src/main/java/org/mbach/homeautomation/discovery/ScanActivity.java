@@ -74,11 +74,15 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
     private final ArrayList<DeviceDAO> pendingDevices = new ArrayList<>();
 
     private final SparseArray<View> cards = new SparseArray<>();
-    private final HomeAutomationDB db = new HomeAutomationDB(this);
     private final OuiDB ouiDB = new OuiDB(this);
     private WifiManager wifiManager;
     private String currentIp;
     private RequestQueue requestQueue = null;
+
+    private final HomeAutomationDB db = new HomeAutomationDB(this);
+    public HomeAutomationDB getDb() {
+        return db;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -545,4 +549,10 @@ public class ScanActivity extends AppCompatActivity implements OnAsyncNetworkTas
             }
         });
     }
+
+    void onActionsResolved() {
+        Log.d(TAG, "onActionsResolved");
+
+    }
+
 }
